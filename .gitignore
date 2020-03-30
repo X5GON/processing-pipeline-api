@@ -104,3 +104,10 @@ dist
 .tern-port
 
 /dist
+
+#======================================
+# IDE IGNORE LIST
+#======================================
+
+# visual studio configs
+.vscode
