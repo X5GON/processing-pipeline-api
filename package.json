@@ -1,0 +1,11 @@
+{
+  "name": "x5gon-preprocessing-pipeline",
+  "version": "1.0.0",
+  "description": "The preprocessing pipeline for extracting, translating and annotating the OER materials",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Erik Novak",
+  "license": "ISC"
+}
