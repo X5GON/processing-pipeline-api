@@ -4,8 +4,44 @@
   "description": "The preprocessing pipeline for extracting, translating and annotating the OER materials",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "git checkout -- src/library/textract && npm run install:textract && npm audit fix",
+    "build": "./node_modules/typescript/bin/tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:textract": "cd src/library/textract && npm install && npm audit fix",
+    "lint": "./node_modules/.bin/eslint ./src",
+    "lint:fix": "./node_modules/.bin/eslint --fix ./src"
   },
   "author": "Erik Novak",
-  "license": "ISC"
+  "contributors": [
+    {
+      "name": "Erik Novak",
+      "email": "erik.novak@ijs.si"
+    }
+  ],
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "archiver": "^3.1.1",
+    "bent": "^7.1.2",
+    "dotenv": "^8.2.0",
+    "file-type": "^14.1.4",
+    "jsonschema": "^1.2.5",
+    "kafka-node": "^5.0.0",
+    "mime-types": "^2.1.26",
+    "pg": "^7.18.2",
+    "pg-cursor": "^2.1.6",
+    "python-shell": "^1.0.8",
+    "qtopology": "^2.2.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.2",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "@types/node": "^13.9.5",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^4.2.3",
+    "mocha": "^7.1.1",
+    "typescript": "^3.8.3"
+  }
 }
