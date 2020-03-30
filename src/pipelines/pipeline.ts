@@ -1,5 +1,3 @@
-import "module-alias/register";
-
 // external modules
 import * as qtopology from "qtopology";
 

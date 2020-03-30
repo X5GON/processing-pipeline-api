@@ -192,7 +192,7 @@ module.exports = {
             init: {
                 wikifier: {
                     user_key: config.preproc.wikifier.userKey,
-                    wikifier_url: config.preproc.wikifier.wikifierUrl,
+                    wikifier_url: config.preproc.wikifier.wikifierURL,
                     max_length: 10000
                 },
                 document_text_path: "material_metadata.raw_text",

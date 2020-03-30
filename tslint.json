@@ -1,7 +1,7 @@
 {
     "extends": ["tslint:recommended"],
     "rules": {
-      "no-console": [ "log" ],
+      "no-console": ["log"],
       "ordered-imports": false,
       "triple-equals": false,
       "no-namespace": false,

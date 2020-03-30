@@ -2,13 +2,13 @@
  * Output the basic bolt template.
  */
 
-import { SimpleCallback, BoltEmitCallback } from "qtopology";
+import * as qtopology from "qtopology";
 
 
 export default class BasicBolt {
 
     protected _name: string;
-    protected _onEmit: BoltEmitCallback;
+    protected _onEmit: qtopology.BoltEmitCallback;
     protected _context: any;
     protected _prefix: string;
 
@@ -18,8 +18,8 @@ export default class BasicBolt {
         this._context = null;
     }
 
-    init(name: string, config: any, context: any, callback: SimpleCallback) {
-        // create sometyhing if needed
+    init(name: string, config: any, context: any, callback: qtopology.SimpleCallback) {
+        // create something if needed
         callback();
     }
 
@@ -27,7 +27,7 @@ export default class BasicBolt {
         // do something if needed
     }
 
-    shutdown(callback: SimpleCallback) {
+    shutdown(callback: qtopology.SimpleCallback) {
         // prepare for gracefull shutdown, e.g. save state
         callback();
     }
@@ -65,8 +65,7 @@ export default class BasicBolt {
         schema[pathList[pathLength - 1]] = value;
     }
 
-
-    receive(data: any, stream_id: string, callback: SimpleCallback) {
+    receive(data: any, stream_id: string, callback: qtopology.SimpleCallback) {
         // do something
         callback();
     }

@@ -4,13 +4,21 @@
  * attribute given and the retrieved message.
  */
 
-// basic bolt template
-const BasicBolt = require("./basic-bolt");
+// interfaces
+import { SimpleCallback } from "qtopology";
 
-/**
- * Extracts wikipedia concepts out of the document content.
- */
+// libraries
+import BasicBolt from "./basic-bolt";
+import Wikifier from "../../library/wikifier";
+
+
 class ExtractWikipedia extends BasicBolt {
+
+    private _wikifier: Wikifier;
+    private _documentTextPath: string;
+    private _wikipediaConceptPath: string;
+    private _documentErrorPath: string;
+
     constructor() {
         super();
         this._name = null;
@@ -18,15 +26,13 @@ class ExtractWikipedia extends BasicBolt {
         this._context = null;
     }
 
-    init(name, config, context, callback) {
+    init(name: string, config: any, context: any, callback: SimpleCallback) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
         this._prefix = `[ExtractWikipedia ${this._name}]`;
-
         // wikifier request instance
-        this._wikifier = require("@library/wikifier")(config.wikifier);
-
+        this._wikifier = new Wikifier(config.wikifier);
         // determine the text to use for wikipedia extraction
         this._documentTextPath = config.document_text_path;
         // determine the location to store the concepts
@@ -41,21 +47,19 @@ class ExtractWikipedia extends BasicBolt {
         // do something if needed
     }
 
-    shutdown(callback) {
+    shutdown(callback: SimpleCallback) {
         // prepare for gracefull shutdown, e.g. save state
         callback();
     }
 
-    async receive(message, stream_id, callback) {
+    async receive(message: any, stream_id: string, callback: SimpleCallback) {
         let self = this;
-
         try {
-            // get the raw text from the material
+            // get the material content in text format
             let text = self.get(message, this._documentTextPath);
 
             if (!text) {
-                // send it to the next component in the pipeline
-                // there was an error - send the material to partial table
+                // the material does not contain any text
                 throw new Error("No text provided.");
             }
             // process material text and extract wikipedia concepts
@@ -64,18 +68,21 @@ class ExtractWikipedia extends BasicBolt {
             if (!wikipedia.length) {
                 throw new Error("No wikipedia concepts found");
             }
-
-            // store merged concepts within the material object
+            // save the extracted wikifier annotations to the message
             self.set(message, this._wikipediaConceptPath, wikipedia);
+            // send the message to the next component in the pipeline
             return this._onEmit(message, stream_id, callback);
         } catch (error) {
-            // there was an error - send the material to partial table
+            // asign the error message and send the message to the next component
             this.set(message, this._documentErrorPath, `${this._prefix} ${error.message}`);
             return this._onEmit(message, "stream_error", callback);
         }
     }
 }
 
-exports.create = function (context) {
-    return new ExtractWikipedia(context);
-};
+// create a new instance of the bolt
+const create = function () {
+    return new ExtractWikipedia();
+}
+
+export { create };

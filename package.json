@@ -4,10 +4,10 @@
   "description": "The preprocessing pipeline for extracting, translating and annotating the OER materials",
   "main": "index.js",
   "scripts": {
-    "postinstall": "git checkout -- src/library/textract && npm run install:textract && npm audit fix",
-    "build": "./node_modules/typescript/bin/tsc",
+    "postinstall": "git checkout -- pkgs/textract && npm run install:textract && npm audit fix",
+    "build": "./node_modules/typescript/bin/tsc --project .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install:textract": "cd src/library/textract && npm install && npm audit fix",
+    "install:textract": "cd pkgs/textract && npm install && npm audit fix",
     "lint": "./node_modules/.bin/eslint ./src",
     "lint:fix": "./node_modules/.bin/eslint --fix ./src"
   },
@@ -36,7 +36,10 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
+    "@types/async": "^3.0.8",
+    "@types/bent": "^7.0.1",
     "@types/node": "^13.9.5",
+    "@types/pg": "^7.14.3",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-prettier": "^3.1.2",

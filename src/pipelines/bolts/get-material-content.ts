@@ -5,15 +5,13 @@
  */
 
 // interfaces
-import {
-    IGetMaterialContent
-} from "../../Interfaces";
-
+import * as Interfaces from "../../Interfaces";
 import { SimpleCallback } from "qtopology";
 
-// basic bolt template
+// modules
 import BasicBolt from "./basic-bolt";
-import * as PostgreSQL from "../../../../../library/postgresQL";
+import * as PostgreSQL from "../../library/postgresQL";
+
 
 class RetrieveMaterialMetadata extends BasicBolt {
 
@@ -27,7 +25,7 @@ class RetrieveMaterialMetadata extends BasicBolt {
         this._context = null;
     }
 
-    init(name: string, config: IGetMaterialContent, context: any, callback: SimpleCallback) {
+    init(name: string, config: Interfaces.IGetMaterialContentConfig, context: any, callback: SimpleCallback) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;

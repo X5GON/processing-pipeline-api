@@ -5,29 +5,42 @@
  * topic and receive its messages.
  */
 
-// external modules
-const k = require("kafka-node");
+// interfaces
+import * as Interfaces from "../Interfaces";
 
-/**
- * @class KafkaConsumer
- * @description Listens to a particular Kafka topic/channel
- * and stores and prepares the messages for consumption.
- */
-class KafkaConsumer {
-    /**
-     * @description Initialize the Kafka consumer instance.
-     * @param {String} host - The host address of the kafka service.
-     * @param {String} topic - The topic kafka consumer is listening to.
-     */
-    constructor(host, topic, groupId, HIGH_WATER = 100, LOW_WATER = 10) {
+// modules
+import * as k from "kafka-node";
+
+
+export default class KafkaConsumer {
+
+    private _data: any[];
+    private _high_water: number;
+    private _low_water: number;
+
+    private _consumerGroup: k.ConsumerGroup;
+    private _highWaterClearing: boolean;
+    private _enabled: boolean;
+
+    // Initialize the Kafka consumer instance
+    constructor(params: Interfaces.IKafkaConsumerParams) {
+
+        const {
+            host,
+            topic,
+            groupId,
+            high_water,
+            low_water
+        } = params;
+
         // the message container
         this._data = [];
 
-        this.HIGH_WATER = HIGH_WATER;
-        this.LOW_WATER = LOW_WATER;
+        this._high_water = high_water;
+        this._low_water = low_water;
 
         // setup the consumer options
-        const options = {
+        const options: k.ConsumerGroupOptions = {
             kafkaHost: host,
             ssl: true,
             groupId,
@@ -35,28 +48,29 @@ class KafkaConsumer {
             protocol: ["roundrobin"],
             fromOffset: "latest",
             fetchMaxBytes: 1024 * 2048,
-            commitOffsetsOnFirstJoin: true,
             outOfRangeOffset: "earliest",
             migrateHLC: false,
             migrateRolling: true,
-            onRebalance: (isAlreadyMember, callback) => { callback(); }
         };
 
         // initialize the consumer group and flags
-        this.consumerGroup = new k.ConsumerGroup(options, [topic]);
+        this._consumerGroup = new k.ConsumerGroup(options, [topic]);
         this._highWaterClearing = false;
         this._enabled = true;
 
         // setup the listener
-        this.consumerGroup.on("message", (message) => {
-            if (message.value === "") { return; }
+        this._consumerGroup.on("message", (message) => {
+            // get the message value and cast it to string
+            const messageValue = message.value.toString();
+
+            if (messageValue === "") { return; }
             // push the new message to the container
-            this._data.push(JSON.parse(message.value));
+            this._data.push(JSON.parse(messageValue));
 
             // handle large amount of data
-            if (this._data.length >= this.HIGH_WATER) {
+            if (this._data.length >= this._high_water) {
                 this._highWaterClearing = true;
-                this.consumerGroup.pause();
+                this._consumerGroup.pause();
             }
         });
     }
@@ -67,7 +81,7 @@ class KafkaConsumer {
     enable() {
         if (!this._enabled) {
             if (!this._highWaterClearing) {
-                this.consumerGroup.resume();
+                this._consumerGroup.resume();
             }
             this._enabled = true;
         }
@@ -79,17 +93,13 @@ class KafkaConsumer {
     disable() {
         if (this._enabled) {
             if (!this._highWaterClearing) {
-                this.consumerGroup.pause();
+                this._consumerGroup.pause();
             }
             this._enabled = false;
         }
     }
 
-
-    /**
-     * @description Get the next message.
-     * @returns {Null|Object} The message object if present. Otherwise, returns null.
-     */
+    // get the next message
     next() {
         if (!this._enabled) {
             return null;
@@ -97,9 +107,9 @@ class KafkaConsumer {
         if (this._data.length > 0) {
             let msg = this._data[0];
             this._data = this._data.slice(1);
-            if (this._data.length <= this.LOW_WATER) {
+            if (this._data.length <= this._low_water) {
                 this._highWaterClearing = false;
-                this.consumerGroup.resume();
+                this._consumerGroup.resume();
             }
             return msg;
         } else {
@@ -107,13 +117,8 @@ class KafkaConsumer {
         }
     }
 
-    /**
-     * Stops and closes the consumer group.
-     * @param {Function} cb - Callback function.
-     */
-    stop(cb) {
-        this.consumerGroup.close(true, cb);
+    // stop and closes the consumer group
+    stop(cb: Interfaces.IGenericCallbackFunc) {
+        this._consumerGroup.close(true, cb);
     }
 }
-
-module.exports = KafkaConsumer;

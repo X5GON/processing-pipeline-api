@@ -7,17 +7,14 @@
  */
 
 // interfaces
-import {
-    ITextractConfiguration,
-    IExtractTextRawConfig
-} from "../../Interfaces";
-
+import * as Interfaces from "../../Interfaces";
 import { SimpleCallback } from "qtopology";
 
-// basic bolt template
+// modules
 import BasicBolt from "./basic-bolt";
-// import textract module from library
-const textract = require("@library/textract");
+
+// import external library textract
+import * as textract from "../../../pkgs/textract";
 
 class ExtractTextRaw extends BasicBolt {
 
@@ -25,7 +22,7 @@ class ExtractTextRaw extends BasicBolt {
     private _documentTextPath: string;
     private _documentErrorPath: string;
     private _methodType: string;
-    private _textractConfig: ITextractConfiguration;
+    private _textractConfig: Interfaces.ITextractConfiguration;
 
     constructor() {
         super();
@@ -35,7 +32,7 @@ class ExtractTextRaw extends BasicBolt {
     }
 
     // initialize the bolt
-    init(name: string, config: IExtractTextRawConfig, context: any, callback: SimpleCallback) {
+    init(name: string, config: Interfaces.IExtractTextRawConfig, context: any, callback: SimpleCallback) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
@@ -88,17 +85,16 @@ class ExtractTextRaw extends BasicBolt {
 
     // receive the message and extract the text content
     receive(message: any, stream_id: string, callback: SimpleCallback) {
-        const self = this;
 
-        const materialUrl = self.get(message, this._documentLocationPath);
-        const materialText = self.get(message, this._documentTextPath);
+        const materialUrl: string = this.get(message, this._documentLocationPath);
+        const materialText: string = this.get(message, this._documentTextPath);
 
         if (materialText) {
             // the material already have the raw text extracted
             return this._onEmit(message, stream_id, callback);
         }
         // extract raw text using the assigned method type
-        textract[this._methodType](materialUrl, self._textractConfig, (error: Error, text: string) => {
+        textract[this._methodType](materialUrl, this._textractConfig, (error: Error, text: string) => {
             if (error) {
                 const errorMessage = `${this._prefix} Not able to extract text: ${error.message}`;
                 this.set(message, this._documentErrorPath, errorMessage);
