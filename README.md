@@ -1,6 +1,6 @@
-# OER Processing Pipeline
+# X5GON Preprocessing Pipeline
 
-This folder contains the code base for OER material processing pipeline. The
+This project contains the code base for OER material processing pipeline. The
 pipeline is created using qtopology which is a distributed stream processing layer.
 
 ## Prerequisites
@@ -144,3 +144,4 @@ own retriever, custom for their API.
 The currenlty available retrievers are for the following OER providers:
 
 - [Videolectures.NET](http://videolectures.net/)
+
