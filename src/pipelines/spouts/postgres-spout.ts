@@ -31,9 +31,9 @@ class PostgresRecords {
         // enable postgresql collection
         if (!this._interval) {
             this._interval = setInterval(() => {
-                this._getMaterialMetadata();
+                this._getMaterialMetadata().catch(console.log);
             }, this._timeInterval);
-            this._getMaterialMetadata();
+            this._getMaterialMetadata().catch(console.log);
         }
     }
 
@@ -63,7 +63,7 @@ class PostgresRecords {
     }
 
 
-    _getMaterialMetadata() {
+    async _getMaterialMetadata() {
         const records = await this._pg.execute(this._sqlStatement, []);
         records.forEach((record) => {
             this._data.push(record);
