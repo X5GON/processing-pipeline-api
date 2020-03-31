@@ -6,6 +6,7 @@ import * as Interfaces from "../../Interfaces";
 import BasicSpout from "./basic-spout";
 import PostgreSQL from "../../library/postgresQL";
 
+
 class PostgresRecords {
 
     private _data: any[];
@@ -62,7 +63,6 @@ class PostgresRecords {
         this._pg.close().then(() => { callback(); });
     }
 
-
     async _getMaterialMetadata() {
         const records = await this._pg.execute(this._sqlStatement, []);
         records.forEach((record) => {
@@ -72,11 +72,7 @@ class PostgresRecords {
 }
 
 
-/**
- * @class PostgresqlSpout
- * @description Periodically retrieves the records from the postgreql table
- * and sends it to the
- */
+// periodically retrieves the records from the postgreql table
 class PostgresqlSpout extends BasicSpout {
 
     private _generator: PostgresRecords;

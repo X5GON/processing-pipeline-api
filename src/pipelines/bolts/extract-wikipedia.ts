@@ -4,9 +4,6 @@
  * attribute given and the retrieved message.
  */
 
-// interfaces
-import { SimpleCallback } from "qtopology";
-
 // libraries
 import BasicBolt from "./basic-bolt";
 import Wikifier from "../../library/wikifier";
@@ -26,7 +23,7 @@ class ExtractWikipedia extends BasicBolt {
         this._context = null;
     }
 
-    init(name: string, config: any, context: any, callback: SimpleCallback) {
+    async init(name: string, config: any, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
@@ -39,20 +36,17 @@ class ExtractWikipedia extends BasicBolt {
         this._wikipediaConceptPath = config.wikipedia_concept_path;
         // the path to where to store the error
         this._documentErrorPath = config.document_error_path || "error";
-        // use other fields from config to control your execution
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: SimpleCallback) {
-        // prepare for gracefull shutdown, e.g. save state
-        callback();
+    async shutdown() {
+        // prepare for graceful shutdown, e.g. save state
     }
 
-    async receive(message: any, stream_id: string, callback: SimpleCallback) {
+    async receive(message: any, stream_id: string) {
         let self = this;
         try {
             // get the material content in text format
@@ -71,11 +65,11 @@ class ExtractWikipedia extends BasicBolt {
             // save the extracted wikifier annotations to the message
             self.set(message, this._wikipediaConceptPath, wikipedia);
             // send the message to the next component in the pipeline
-            return this._onEmit(message, stream_id, callback);
+            return await this._onEmit(message, stream_id);
         } catch (error) {
             // asign the error message and send the message to the next component
             this.set(message, this._documentErrorPath, `${this._prefix} ${error.message}`);
-            return this._onEmit(message, "stream_error", callback);
+            return await this._onEmit(message, "stream_error");
         }
     }
 }

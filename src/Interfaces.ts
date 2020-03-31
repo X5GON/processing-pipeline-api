@@ -1,15 +1,7 @@
 
-export interface IGenericCallbackFunc {
-    (error: Error, value?: any): any
-}
-
-export interface IGenericExecFunc {
-    (value?: any): any
-}
-
-export interface IGenericJSON {
-    [key: string]: any;
-}
+export interface IGenericJSON { [key: string]: any; }
+export interface IGenericExecFunc { (value?: any): any }
+export interface IGenericCallbackFunc { (error: Error, value?: any): any }
 
 /////////////////////////////////////////////////////////////////////
 // Configuration Interfaces
@@ -91,6 +83,18 @@ export interface IConfiguration {
 }
 
 /////////////////////////////////////////////////////////////////////
+// Kafka Interfaces
+/////////////////////////////////////////////////////////////////////
+
+export interface IKafkaConsumerParams {
+    host: string;
+    topic: string;
+    groupId: string;
+    high_water: number;
+    low_water: number;
+}
+
+/////////////////////////////////////////////////////////////////////
 // PostgreSQL Interfaces
 /////////////////////////////////////////////////////////////////////
 
@@ -109,19 +113,13 @@ export interface IPostgreSQLBatchCallbackFunc {
 }
 
 /////////////////////////////////////////////////////////////////////
-// Kafka Interfaces
+// JSON Validator Interfaces
 /////////////////////////////////////////////////////////////////////
 
-export interface IKafkaConsumerParams {
-    host: string;
-    topic: string;
-    groupId: string;
-    high_water: number;
-    low_water: number;
-}
+import * as jsonschema from "jsonschema";
 
-export interface IKafkaProducerParams {
-
+export interface IValidatorSchemas {
+    [key:string]: jsonschema.Schema;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -206,6 +204,7 @@ export interface IWikifierConceptMapping {
 // Bolt interfaces
 /////////////////////////////////////////////////////////////////////
 
+import * as qtolopology from "qtopology";
 
 ///////////////////////////////////////
 // Extract Text Raw
@@ -218,7 +217,7 @@ export interface ITextractConfiguration {
 }
 
 export interface IExtractTextRawConfig {
-    onEmit?: any;
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
     document_location_path: string;
     document_text_path: string;
     document_error_path?: string;
@@ -231,12 +230,95 @@ export interface IExtractTextRawConfig {
 }
 
 ///////////////////////////////////////
+// Extract Text TTP
+///////////////////////////////////////
+
+export interface ITTPLanguageText {
+    [key: string]: {
+        tlpath?: { "l": string }[]
+    };
+}
+
+export interface ITTPLanguageVideo {
+    [key: string]: {
+        sub: {
+            tlpath?: {"l": string }[]
+        }
+    };
+}
+
+export interface ITTPIngestNewResponse {
+    rcode: number;
+    id: string;
+}
+
+export interface IExtractTextTTPConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    ttp: {
+        user: string;
+        token: string;
+        url?: string;
+        languages: ITTPLanguageText;
+        formats: {
+            [key: number]: string;
+        }
+        timeout_millis: number;
+    }
+    tmemporary_folder: string;
+    document_language_path: string;
+    document_title_path: string;
+    document_text_path: string;
+    document_transcriptions_path: string;
+    document_error_path?: string;
+    ttp_id_path: string;
+}
+
+
+export interface IExtractVideoTTPConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    ttp: {
+        user: string;
+        token: string;
+        url?: string;
+        languages: ITTPLanguageVideo;
+        formats: {
+            [key: number]: string;
+        }
+        timeout_millis: number;
+    }
+    tmemporary_folder: string;
+    document_language_path: string;
+    document_location_path: string;
+    document_authors_path: string;
+    document_title_path: string;
+    document_text_path: string;
+    document_transcriptions_path: string;
+    document_error_path?: string;
+    ttp_id_path: string;
+}
+
+export interface IExtractTTPStatusFunc {
+    (id: string): Promise<{
+        process_completed: boolean;
+        status_info: string;
+        process_id: string;
+        status_code: number;
+    }>
+}
+
+export interface IExtractTTPStatus {
+    status_code: number;
+    status_info: string;
+}
+
+///////////////////////////////////////
 // Get Material Contents
 ///////////////////////////////////////
 
 export interface IGetMaterialContentConfig {
-    onEmit?: any;
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
     document_text_path: string;
+    document_error_path: string;
     pg: {
         host: string;
         port: number;
@@ -255,7 +337,7 @@ export interface IGetMaterialContentConfig {
 ///////////////////////////////////////
 
 export interface IExtractWikipediaConfig {
-    onEmit?: any;
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
     wikifier: {
         user_key: string;
         wikifier_url?: string;
@@ -264,4 +346,12 @@ export interface IExtractWikipediaConfig {
     document_text_path: string;
     wikipedia_concept_path: string;
     document_error_path?: string;
+}
+
+///////////////////////////////////////
+// Message Validate
+///////////////////////////////////////
+
+export interface IMessageValidateConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync
 }

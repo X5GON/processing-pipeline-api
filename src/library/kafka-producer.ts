@@ -15,7 +15,7 @@ import * as k from "kafka-node";
 export default class KafkaProducer {
 
     private _ready: boolean;
-    private _messages: any[];
+    private _payloads: k.ProduceRequest[][];
     private _producer: k.HighLevelProducer;
 
     // initialize a kafka producer
@@ -26,7 +26,7 @@ export default class KafkaProducer {
         };
 
         this._ready = false;
-        this._messages = [];
+        this._payloads = [];
         const client = new k.KafkaClient(options);
         // create a kafka producer
         this._producer = new k.HighLevelProducer(client);
@@ -35,15 +35,15 @@ export default class KafkaProducer {
         this._producer.on("ready", () => {
             this._ready = true;
             // check if there are any messages not sent
-            if (this._messages.length) {
+            if (this._payloads.length) {
                 // send all messages to the appropriate
-                while (this._messages.length) {
+                while (this._payloads.length) {
                     // get the first element from the array of messages
-                    const message = this._messages[0];
+                    const message = this._payloads[0];
                     // update the messages array
-                    this._messages = this._messages.slice(1);
+                    this._payloads = this._payloads.slice(1);
                     // send the message to the corresponsing topic
-                    this._producer.send([message], (xerror, data) => {
+                    this._producer.send(message, (xerror, data) => {
                         if (xerror) { console.log(xerror); }
                     });
                 }
@@ -62,7 +62,7 @@ export default class KafkaProducer {
 
         // prepare the message in string
         const messages = JSON.stringify(msg);
-        const payload = [{ topic, messages }];
+        const payload: k.ProduceRequest[] = [{ topic, messages }];
         if (self._ready) {
             // the producer is ready to send the messages
             self._producer.send(payload, (error, data) => {
@@ -71,7 +71,7 @@ export default class KafkaProducer {
             });
         } else {
             // store the topic and message to send afterwards
-            self._messages.push(payload);
+            self._payloads.push(payload);
             return callback(null);
         }
     }

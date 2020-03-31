@@ -6,17 +6,17 @@
 
 // interfaces
 import * as Interfaces from "../../Interfaces";
-import { SimpleCallback } from "qtopology";
 
 // modules
 import BasicBolt from "./basic-bolt";
-import * as PostgreSQL from "../../library/postgresQL";
+import PostgreSQL from "../../library/postgresQL";
 
 
 class RetrieveMaterialMetadata extends BasicBolt {
 
-    private _pg: any;
+    private _pg: PostgreSQL;
     private _documentTextPath: string;
+    private _documentErrorPath: string;
 
     constructor() {
         super();
@@ -25,39 +25,36 @@ class RetrieveMaterialMetadata extends BasicBolt {
         this._context = null;
     }
 
-    init(name: string, config: Interfaces.IGetMaterialContentConfig, context: any, callback: SimpleCallback) {
+    async init(name: string, config: Interfaces.IGetMaterialContentConfig, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
         this._prefix = `[RetrieveMaterialMetadata ${this._name}]`;
         this._documentTextPath = config.document_text_path || "material_metadata.raw_text";
+        this._documentErrorPath = config.document_error_path || "error";
         // create the postgres connection
-        this._pg = PostgreSQL(config.pg);
-        callback();
+        this._pg = new PostgreSQL(config.pg);
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: SimpleCallback) {
+    async shutdown() {
         // close connection to postgres database
-        this._pg.close();
-        // shutdown component
-        callback();
+        await this._pg.close();
     }
 
-    receive(material: any, stream_id: string, callback: SimpleCallback) {
+    async receive(material: any, stream_id: string) {
         let self = this;
 
         const material_id: number = material.material_id;
 
-        this._pg.select({ material_id, type: "text_extraction" }, "material_contents", (error: Error, response: any[]) => {
-            if (error) { return callback(); }
-
+        try {
+            const response = await this._pg.select({ material_id, type: "text_extraction" }, "material_contents");
             if (response.length === 0) {
                 // there was no response, material does not have any text stored
-                return self._onEmit(material, stream_id, callback);
+                return await this._onEmit(material, stream_id);
             }
             // get the text value
             const {
@@ -66,10 +63,15 @@ class RetrieveMaterialMetadata extends BasicBolt {
                 }
             } = response[0];
             // save the text as a material attribute
-            self.set(material, self._documentTextPath, text);
+            this.set(material, self._documentTextPath, text);
             // go to the next step of material processing
-            return self._onEmit(material, stream_id, callback);
-        });
+            return await this._onEmit(material, stream_id);
+        } catch (error) {
+            const errorMessage = `${this._prefix} ${error.message}`;
+            this.set(material, this._documentErrorPath, errorMessage);
+            // go to the next step of material processing
+            return await this._onEmit(material, "stream_error");
+        }
     }
 }
 

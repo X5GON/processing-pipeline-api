@@ -8,12 +8,9 @@
 
 // interfaces
 import * as Interfaces from "../../Interfaces";
-import { SimpleCallback } from "qtopology";
 
 // modules
 import BasicBolt from "./basic-bolt";
-
-// import external library textract
 import * as textract from "../../../pkgs/textract";
 
 class ExtractTextRaw extends BasicBolt {
@@ -32,7 +29,7 @@ class ExtractTextRaw extends BasicBolt {
     }
 
     // initialize the bolt
-    init(name: string, config: Interfaces.IExtractTextRawConfig, context: any, callback: SimpleCallback) {
+    async init(name: string, config: Interfaces.IExtractTextRawConfig, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
@@ -70,39 +67,36 @@ class ExtractTextRaw extends BasicBolt {
             ...preserve_only_multiple_line_breaks && { preserveOnlyMultipleLineBreaks: preserve_only_multiple_line_breaks },
             ...include_alt_text                   && { includeAltText: include_alt_text }
         };
-
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: SimpleCallback) {
-        // prepare for gracefull shutdown, e.g. save state
-        callback();
+    async shutdown() {
+        // prepare for graceful shutdown, e.g. save state
     }
 
     // receive the message and extract the text content
-    receive(message: any, stream_id: string, callback: SimpleCallback) {
+    async receive(message: any, stream_id: string) {
 
         const materialUrl: string = this.get(message, this._documentLocationPath);
         const materialText: string = this.get(message, this._documentTextPath);
 
         if (materialText) {
             // the material already have the raw text extracted
-            return this._onEmit(message, stream_id, callback);
+            return await this._onEmit(message, stream_id);
         }
         // extract raw text using the assigned method type
-        textract[this._methodType](materialUrl, this._textractConfig, (error: Error, text: string) => {
+        textract[this._methodType](materialUrl, this._textractConfig, async (error: Error, text: string) => {
             if (error) {
                 const errorMessage = `${this._prefix} Not able to extract text: ${error.message}`;
                 this.set(message, this._documentErrorPath, errorMessage);
-                return this._onEmit(message, "stream_error", callback);
+                return await this._onEmit(message, "stream_error");
             }
             // save the raw text within the metadata
             this.set(message, this._documentTextPath, text);
-            return this._onEmit(message, stream_id, callback);
+            return await this._onEmit(message, stream_id);
         });
     }
 }

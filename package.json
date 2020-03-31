@@ -20,8 +20,10 @@
   ],
   "license": "BSD-2-Clause",
   "dependencies": {
+    "@elastic/elasticsearch": "^7.6.1",
     "archiver": "^3.1.1",
     "bent": "^7.1.2",
+    "delay": "^4.3.0",
     "dotenv": "^8.2.0",
     "file-type": "^14.1.4",
     "jsonschema": "^1.2.5",

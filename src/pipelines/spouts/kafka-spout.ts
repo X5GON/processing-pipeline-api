@@ -12,11 +12,7 @@ import * as qtopology from "qtopology";
 import BasicSpout from "./basic-spout";
 import KafkaConsumer from "../../library/kafka-consumer";
 
-/**
- * @class KafkaSpout
- * @description Retrieves the messages provided by a Kafka topic and forwards it
- * to the next component of the topology.
- */
+
 class KafkaSpout extends BasicSpout {
 
     private _generator: KafkaConsumer;
@@ -63,7 +59,7 @@ class KafkaSpout extends BasicSpout {
     }
 
     next(callback: qtopology.SpoutNextCallback) {
-        // get the next message from the kafka message
+        // get the next message from the generator
         const message = this._generator.next();
         callback(null, message, null);
     }

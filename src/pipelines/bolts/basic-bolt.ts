@@ -8,7 +8,7 @@ import * as qtopology from "qtopology";
 export default class BasicBolt {
 
     protected _name: string;
-    protected _onEmit: qtopology.BoltEmitCallback;
+    protected _onEmit: qtopology.BoltEmitCallbackAsync;
     protected _context: any;
     protected _prefix: string;
 
@@ -18,18 +18,16 @@ export default class BasicBolt {
         this._context = null;
     }
 
-    init(name: string, config: any, context: any, callback: qtopology.SimpleCallback) {
+    async init(name: string, config: any, context: any) {
         // create something if needed
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: qtopology.SimpleCallback) {
-        // prepare for gracefull shutdown, e.g. save state
-        callback();
+    async shutdown() {
+        // prepare for graceful shutdown, e.g. save state
     }
 
     // extracts the data from the object
@@ -65,8 +63,7 @@ export default class BasicBolt {
         schema[pathList[pathLength - 1]] = value;
     }
 
-    receive(data: any, stream_id: string, callback: qtopology.SimpleCallback) {
+    async receive(data: any, stream_id: string) {
         // do something
-        callback();
     }
 }

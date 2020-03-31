@@ -1,9 +1,9 @@
-// external modules
-import * as async from "async";
-import * as bent from "bent";
-
+// interfaces
 import * as Interfaces from "../Interfaces";
 
+// modules
+import * as async from "async";
+import * as bent from "bent";
 
 export default class Wikifier {
 

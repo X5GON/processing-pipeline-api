@@ -75,9 +75,8 @@ export default class KafkaConsumer {
         });
     }
 
-    /**
-     * @description Enables message consumption.
-     */
+
+    // enables message consumption
     enable() {
         if (!this._enabled) {
             if (!this._highWaterClearing) {
@@ -87,9 +86,8 @@ export default class KafkaConsumer {
         }
     }
 
-    /**
-     * @description Disable/pause message consumption.
-     */
+
+    // disables message consumption
     disable() {
         if (this._enabled) {
             if (!this._highWaterClearing) {
@@ -98,6 +96,7 @@ export default class KafkaConsumer {
             this._enabled = false;
         }
     }
+
 
     // get the next message
     next() {
@@ -116,6 +115,7 @@ export default class KafkaConsumer {
             return null;
         }
     }
+
 
     // stop and closes the consumer group
     stop(cb: Interfaces.IGenericCallbackFunc) {
