@@ -35,11 +35,10 @@ export default class PostgreSQL {
 
     // initialize pool and establish connections
     _initializePool() {
-        let self = this;
         // create a pool of connections
-        self._pool = new pg.Pool(self._config);
+        this._pool = new pg.Pool(this._config);
         // put event handler
-        self._pool.on("error", (error, client) => {
+        this._pool.on("error", (error, client) => {
             // how to handle errors of the idle clients
             console.error("idle client error", error.message, error.stack);
             // TODO: expect the client - find a possible reason for exit
@@ -50,15 +49,15 @@ export default class PostgreSQL {
     // extracts the keys and values for querying
     _extractKeysAndValues(params: any[], idx: number) {
         // prepare query and params
-        let keys: string[] = [];
-        let values: string[] = [];
+        const keys: string[] = [];
+        const values: string[] = [];
 
         // iterate thorugh the parameters
-        for (const key in params) {
+        for (const key of Object.keys(params)) {
             // check if key-value is object
             if (params[key] instanceof Object) {
                 // iterate through the object keys to create a query
-                for (const kkey in params[key]) {
+                for (const kkey of Object.keys(params[key])) {
                     keys.push(`${key}->>'${kkey}'=$${idx}`); idx++;
                     values.push(params[key][kkey]);
                 }
@@ -79,7 +78,7 @@ export default class PostgreSQL {
         let params: string[] = [];
         if (whereParams instanceof Array) {
             // get all conditions together
-            let conditionKeys: string[] = [];
+            const conditionKeys: string[] = [];
             for (const cond of whereParams) {
                 // extract the conditions and values, concat in an array
                 const { keys, values, idx: index } = this._extractKeysAndValues(cond, idx);
@@ -103,10 +102,10 @@ export default class PostgreSQL {
     // gets the condition keys and values
     _getConditionKeysAndValues(values: { [key: string]: string | number }, idx: number) {
         // prepare query and params
-        let condition: string[] = [];
-        let params: (string | number)[] = [];
+        const condition: string[] = [];
+        const params: (string | number)[] = [];
 
-        for (const key in values) {
+        for (const key of Object.keys(values)) {
             // the key-values are primary values
             condition.push(`${key}=$${idx}`); idx++;
             params.push(values[key]);
@@ -149,7 +148,7 @@ export default class PostgreSQL {
 
         let lastBatch = batchSize;
         // This function designates what to do with the values read by the cursor.
-        function _batchFunction(xcallback: { (param: any): any }) {
+        function _batchFunction(xcallback: (param: any) => any) {
             cursor.read(batchSize, (xerror: Error, rows: any[]) => {
                 if (xerror) {
                     lastBatch = 0;
@@ -180,8 +179,8 @@ export default class PostgreSQL {
     // inserts the object in the database
     async insert(record: Interfaces.IGenericJSON, table: string) {
         // get the record keys and values
-        let keys: string[] = [];
-        let params: any[] = [];
+        const keys: string[] = [];
+        const params: any[] = [];
         // populate key and params arrays
         Object.entries(record).forEach((value) => {
             keys.push(value[0]);
@@ -279,18 +278,16 @@ export default class PostgreSQL {
 
     // upserts (updates or inserts) the row in the database
     async upsert(record: Interfaces.IGenericJSON, conditions: any | any[], table: string) {
-        let self = this;
-
         // get the record keys and values
         const recordKeys = Object.keys(record);
         const recordValIds = [...Array(recordKeys.length).keys()]
             .map((id) => `$${id + 1}`).join(",");
 
         // get the values used to update the records
-        let { condition, params } = self._getConditionKeysAndValues(record, 1);
+        const { condition, params } = this._getConditionKeysAndValues(record, 1);
 
         // get the condition keys - must be UNIQUE
-        let conditionKeys = Object.keys(conditions);
+        const conditionKeys = Object.keys(conditions);
         if (conditionKeys.length > 1) {
             throw new Error(`[PostgresQL upsert] Too many conditions ${conditionKeys.join(",")}`);
         }
@@ -302,6 +299,6 @@ export default class PostgreSQL {
             RETURNING *;
         `;
         // execute the query
-        return await self.execute(query, params);
+        return await this.execute(query, params);
     }
 }

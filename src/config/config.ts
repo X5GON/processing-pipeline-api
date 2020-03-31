@@ -36,7 +36,7 @@ const common = {
     },
     ttp: {
         user: process.env.PREPROC_TTP_USER,
-        token: process.env.PREPROC_TTP_TOKEN,
+        token: process.env.PREPROC_TTP_TOKEN
     }
 };
 
@@ -77,7 +77,7 @@ const development = {
         port: parseInt(process.env.DEV_PG_PORT, 10) || 5432,
         database: process.env.DEV_PG_DATABASE || "x5gon",
         max: parseInt(process.env.DEV_PG_MAX, 10) || 10,
-        idleTimeoutMillis: parseInt(process.env.DEV_PG_IDLE_TIMEOUT_MILLIS) || 30000,
+        idleTimeoutMillis: parseInt(process.env.DEV_PG_IDLE_TIMEOUT_MILLIS, 10) || 30000,
         user: process.env.DEV_PG_USER || "postgres",
         password: process.env.DEV_PG_PASSWORD,
         schema: process.env.DEV_PG_SCHEMA || "public",

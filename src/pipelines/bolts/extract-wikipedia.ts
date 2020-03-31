@@ -47,23 +47,22 @@ class ExtractWikipedia extends BasicBolt {
     }
 
     async receive(message: any, stream_id: string) {
-        let self = this;
         try {
             // get the material content in text format
-            let text = self.get(message, this._documentTextPath);
+            const text = this.get(message, this._documentTextPath);
 
             if (!text) {
                 // the material does not contain any text
                 throw new Error("No text provided.");
             }
             // process material text and extract wikipedia concepts
-            const { wikipedia } = await self._wikifier.processText(text);
+            const { wikipedia } = await this._wikifier.processText(text);
             // retrieve wikifier results
             if (!wikipedia.length) {
                 throw new Error("No wikipedia concepts found");
             }
             // save the extracted wikifier annotations to the message
-            self.set(message, this._wikipediaConceptPath, wikipedia);
+            this.set(message, this._wikipediaConceptPath, wikipedia);
             // send the message to the next component in the pipeline
             return await this._onEmit(message, stream_id);
         } catch (error) {
@@ -75,7 +74,7 @@ class ExtractWikipedia extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = function () {
+const create = () => {
     return new ExtractWikipedia();
 }
 

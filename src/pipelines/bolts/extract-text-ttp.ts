@@ -70,7 +70,7 @@ class ExtractTextTTP extends BasicBolt {
             fr: { }, // french
             it: { }, // italian
             pt: { }, // portuguese
-            ca: { }, // catalan
+            ca: { }  // catalan
         };
         // the transcription formats
         this._ttpFormats = config.ttp.formats || {
@@ -114,7 +114,7 @@ class ExtractTextTTP extends BasicBolt {
 
     async receive(message: any, stream_id: string) {
         // iteratively check for the process status
-        const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (id: string) => {
+        const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (process_id: string) => {
             this._delayObject = delay(this._ttpTimeoutMillis);
             // wait for a number of milliseconds
             await this._delayObject;
@@ -122,22 +122,22 @@ class ExtractTextTTP extends BasicBolt {
                 const {
                     status_code,
                     status_info
-                } = await this._getRequest("/status", { ...this._ttpOptions, id });
+                } = await this._getRequest("/status", { ...this._ttpOptions, id: process_id });
                 if (status_code === 3) {
                     return {
                         process_completed: true,
                         status_info,
-                        process_id: id,
+                        process_id,
                         status_code
                     };
                 } else if (status_code < 3) {
-                    return await _checkTTPStatus(id);
+                    return await _checkTTPStatus(process_id);
                 } else {
                     // the process has encountered an error
                     return {
                         process_completed: false,
                         status_info,
-                        process_id: id,
+                        process_id,
                         status_code
                     };
                 }
@@ -145,7 +145,7 @@ class ExtractTextTTP extends BasicBolt {
                 return {
                     process_completed: false,
                     status_info: `${this._prefix} ${error.message}`,
-                    process_id: id,
+                    process_id,
                     status_code: 900
                 }
             }
@@ -178,10 +178,10 @@ class ExtractTextTTP extends BasicBolt {
                             + Date.now();
 
         // create the requested langs object
-        let requested_langs: Interfaces.ITTPLanguageText = JSON.parse(JSON.stringify(this._ttpLanguages));
+        const requested_langs: Interfaces.ITTPLanguageText = JSON.parse(JSON.stringify(this._ttpLanguages));
 
         // assign the correct TTP language translation path
-        for (let language of Object.keys(this._ttpLanguages)) {
+        for (const language of Object.keys(this._ttpLanguages)) {
             if (language === documentLanguage) {
                 // delete the language from the file
                 // we don't need translations of the same language
@@ -237,7 +237,7 @@ class ExtractTextTTP extends BasicBolt {
 
         // create a zip file containing the material and manifest
         const documentPackagePath = path.join(rootPath, "document-package.zip");
-        let documentPackage = fs.createWriteStream(documentPackagePath);
+        const documentPackage = fs.createWriteStream(documentPackagePath);
         const archive = archiver("zip", { zlip: { level: 0 } });
 
         // good practice to catch warnings (ie stat failures and other non-blocking errors)
@@ -305,13 +305,13 @@ class ExtractTextTTP extends BasicBolt {
             // //////////////////////////////////////////////////////
 
             // get processed values - transcriptions and translations
-            let languageRequests = [];
+            const languageRequests = [];
             // iterate through all languages
-            for (let lang of languages) {
+            for (const lang of languages) {
                 // iterate through all formats
-                for (let format of formats) {
+                for (const format of formats) {
                     // prepare the requests to get the transcriptions and translations
-                    let request = this._getRequest("/get", {
+                    const request = this._getRequest("/get", {
                         ...this._ttpOptions,
                         id: external_id,
                         format,
@@ -326,17 +326,17 @@ class ExtractTextTTP extends BasicBolt {
             const translations = await Promise.all(languageRequests);
 
             // prepare placeholders for material metadata
-            let transcriptions = { };
+            const transcriptions = { };
 
             // iterate through all responses
             for (let langId = 0; langId < languages.length; langId++) {
                 // get current language
                 const lang = languages[langId];
                 // placeholder for transcriptions
-                let transcription: { plain?: string } = { };
+                const transcription: { plain?: string } = { };
                 for (let formatId = 0; formatId < formats.length; formatId++) {
                     const format = this._ttpFormats[formats[formatId]];
-                    let index = langId * formats.length + formatId;
+                    const index = langId * formats.length + formatId;
                     try {
                         // if the response can be parsed, it contains the error object
                         // otherwise, it is the string containing the transcriptions
@@ -374,7 +374,7 @@ class ExtractTextTTP extends BasicBolt {
     }
 }
 
-const create = function () {
+const create = () => {
     return new ExtractTextTTP();
 }
 

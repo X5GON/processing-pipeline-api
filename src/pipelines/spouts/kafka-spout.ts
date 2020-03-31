@@ -65,7 +65,7 @@ class KafkaSpout extends BasicSpout {
     }
 }
 
-const create = function () {
+const create = () => {
     return new KafkaSpout();
 }
 

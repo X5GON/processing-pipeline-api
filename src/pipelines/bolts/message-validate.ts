@@ -61,7 +61,7 @@ class MessageValidate extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = function () {
+const create = () => {
     return new MessageValidate();
 }
 

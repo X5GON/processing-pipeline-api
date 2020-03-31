@@ -64,7 +64,7 @@ class ExtractVideoTTP extends BasicBolt {
             fr: { sub: {} }, // french
             it: { sub: {} }, // italian
             pt: { sub: {} }, // portuguese
-            ca: { sub: {} }, // catalan
+            ca: { sub: {} }  // catalan
         };
         // the transcription formats
         this._ttpFormats = config.ttp.formats || {
@@ -111,7 +111,7 @@ class ExtractVideoTTP extends BasicBolt {
 
     async receive(message: any, stream_id: string) {
         // iteratively check for the process status
-        const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (id: string) => {
+        const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (process_id: string) => {
             this._delayObject = delay(this._ttpTimeoutMillis);
             // wait for a number of milliseconds
             await this._delayObject;
@@ -119,22 +119,22 @@ class ExtractVideoTTP extends BasicBolt {
                 const {
                     status_code,
                     status_info
-                }: Interfaces.IExtractTTPStatus = await this._getRequest("/status", { ...this._ttpOptions, id });
+                }: Interfaces.IExtractTTPStatus = await this._getRequest("/status", { ...this._ttpOptions, id: process_id });
                 if (status_code === 6) {
                     return {
                         process_completed: true,
                         status_info,
-                        process_id: id,
+                        process_id,
                         status_code
                     };
                 } else if (status_code < 6) {
-                    return await _checkTTPStatus(id);
+                    return await _checkTTPStatus(process_id);
                 } else {
                     // the process has encountered an error
                     return {
                         process_completed: false,
                         status_info,
-                        process_id: id,
+                        process_id,
                         status_code
                     };
                 }
@@ -142,7 +142,7 @@ class ExtractVideoTTP extends BasicBolt {
                 return {
                     process_completed: false,
                     status_info: `${this._prefix} ${error.message}`,
-                    process_id: id,
+                    process_id,
                     status_code: 900
                 }
             }
@@ -203,13 +203,13 @@ class ExtractVideoTTP extends BasicBolt {
         }
 
         // create the requested langs object
-        let requestedLanguages: Interfaces.ITTPLanguageVideo = JSON.parse(JSON.stringify(this._ttpLanguages));
+        const requestedLanguages: Interfaces.ITTPLanguageVideo = JSON.parse(JSON.stringify(this._ttpLanguages));
         const constructedLanguages = Object.keys(requestedLanguages)
                 .filter((lang) => lang !== "en");
 
         if (constructedLanguages.includes(documentLanguage)) {
             // for non-english lnaguages, we need to set up translation paths
-            for (let language of constructedLanguages) {
+            for (const language of constructedLanguages) {
                 // if the language is not the material language or english
                 if (language !== "en" && language !== documentLanguage) {
                     // set the translation path for the given language
@@ -295,13 +295,13 @@ class ExtractVideoTTP extends BasicBolt {
             // //////////////////////////////////////////////////////
 
             // get processed values - transcriptions and translations
-            let languageRequests = [];
+            const languageRequests = [];
             // iterate through all languages
-            for (let lang of languages) {
+            for (const lang of languages) {
                 // iterate through all formats
-                for (let format of formats) {
+                for (const format of formats) {
                     // prepare the requests to get the transcriptions and translations
-                    let request = this._getRequest("/get", {
+                    const request = this._getRequest("/get", {
                         ...this._ttpOptions,
                         id: external_id,
                         format,
@@ -316,7 +316,7 @@ class ExtractVideoTTP extends BasicBolt {
             const translations = await Promise.all(languageRequests);
 
             // prepare placeholders for material metadata
-            let transcriptions: { [key: string]: any } = { };
+            const transcriptions: { [key: string]: any } = { };
             let raw_text: string;
 
             // iterate through all responses
@@ -324,10 +324,10 @@ class ExtractVideoTTP extends BasicBolt {
                 // get current language
                 const lang = languages[langId];
                 // placeholder for transcriptions
-                let transcription: { dfxp?: string, webvtt?: string, plain?: string } = { };
+                const transcription: { dfxp?: string, webvtt?: string, plain?: string } = { };
                 for (let formatId = 0; formatId < formats.length; formatId++) {
                     const format = this._ttpFormats[formats[formatId]];
-                    let index = langId * formats.length + formatId;
+                    const index = langId * formats.length + formatId;
                     try {
                         // if the response can be parsed, it contains the error object
                         // otherwise, it is the string containing the transcriptions
@@ -365,7 +365,7 @@ class ExtractVideoTTP extends BasicBolt {
     }
 }
 
-const create = function () {
+const create = () => {
     return new ExtractVideoTTP();
 }
 

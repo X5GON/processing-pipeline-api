@@ -46,7 +46,6 @@ class RetrieveMaterialMetadata extends BasicBolt {
     }
 
     async receive(material: any, stream_id: string) {
-        let self = this;
 
         const material_id: number = material.material_id;
 
@@ -63,7 +62,7 @@ class RetrieveMaterialMetadata extends BasicBolt {
                 }
             } = response[0];
             // save the text as a material attribute
-            this.set(material, self._documentTextPath, text);
+            this.set(material, this._documentTextPath, text);
             // go to the next step of material processing
             return await this._onEmit(material, stream_id);
         } catch (error) {
@@ -76,7 +75,7 @@ class RetrieveMaterialMetadata extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = function () {
+const create = () => {
     return new RetrieveMaterialMetadata();
 };
 

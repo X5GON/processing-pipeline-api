@@ -4,7 +4,7 @@ import * as qtopology from "qtopology";
 // parse the command line
 const params = qtopology.parseCommandLineEx(process.argv, {
     tn: "topologyName",
-    tp: "topologyPath",
+    tp: "topologyPath"
 });
 
 // load the associated topology

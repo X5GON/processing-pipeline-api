@@ -20,18 +20,16 @@ export default class Validator {
 
     // initialize the JSON validator
     constructor(schemas?: Interfaces.IValidatorSchemas) {
-        let self = this;
         // save the JSON validator
-        self._validator = new jsonschema.Validator();
+        this._validator = new jsonschema.Validator();
         // the json schemas used to validate
-        self.schemas = schemas;
+        this.schemas = schemas;
     }
 
 
     // object validaton function
     validateSchema(instance: any, schema: jsonschema.Schema) {
-        let self = this;
-        let validation = self._validator.validate(instance, schema);
+        const validation = this._validator.validate(instance, schema);
         return {
             isValid: validation.valid,
             errors: validation.errors,

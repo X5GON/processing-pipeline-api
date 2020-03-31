@@ -33,8 +33,8 @@ export default class BasicBolt {
     // extracts the data from the object
     get(object: any, path: string) {
         let schema = object;
-        let pathList = path.split(".");
-        for (let val of pathList) {
+        const pathList = path.split(".");
+        for (const val of pathList) {
             schema = schema[val];
             // if there is nothing return null
             if (!schema) { return null; }
@@ -51,10 +51,10 @@ export default class BasicBolt {
     set(object: any, path: string, value: any) {
         if (!path) { return; }
         let schema = object;
-        let pathList = path.split(".");
-        let pathLength = pathList.length;
+        const pathList = path.split(".");
+        const pathLength = pathList.length;
         for (let i = 0; i < pathLength - 1; i++) {
-            let el = pathList[i];
+            const el = pathList[i];
             if (!schema[el]) {
                 schema[el] = {};
             }

@@ -28,9 +28,13 @@ export default class BasicSpout {
         callback();
     }
 
-    run() { }
+    run() {
+        // do something if needed
+    }
 
-    pause() { }
+    pause() {
+        // do something if needed
+    }
 
     next(callback: qtopology.SimpleCallback) {
         // do something

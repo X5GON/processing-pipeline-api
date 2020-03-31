@@ -1,7 +1,7 @@
 
 export interface IGenericJSON { [key: string]: any; }
-export interface IGenericExecFunc { (value?: any): any }
-export interface IGenericCallbackFunc { (error: Error, value?: any): any }
+export type IGenericExecFunc = (value?: any) => any;
+export type IGenericCallbackFunc = (error: Error, value?: any) => any;
 
 /////////////////////////////////////////////////////////////////////
 // Configuration Interfaces
@@ -108,9 +108,7 @@ export interface IPostgreSQLParams {
     idleTimeoutMillis: number;
 }
 
-export interface IPostgreSQLBatchCallbackFunc {
-    (error: Error, rows: any[], callback: IGenericCallbackFunc): void;
-}
+export type IPostgreSQLBatchCallbackFunc = (error: Error, rows: any[], callback: IGenericCallbackFunc) => void;
 
 /////////////////////////////////////////////////////////////////////
 // JSON Validator Interfaces
@@ -183,13 +181,8 @@ export interface IWikifierResponse {
     [key: string]: any;
 }
 
-export interface IWikifierTaskFunc {
-    (error: Error, concepts: IWikifierConcept[]): any;
-}
-
-export interface IWikifierCreateTaskFunc {
-    (callback: IWikifierTaskFunc): Promise<any>;
-}
+export type IWikifierTaskFunc = (error: Error, concepts: IWikifierConcept[]) => any;
+export type IWikifierCreateTaskFunc = (callback: IWikifierTaskFunc) => Promise<any>;
 
 export interface IWikifierExtract {
     wikipedia: IWikifierConcept[];
@@ -297,14 +290,12 @@ export interface IExtractVideoTTPConfig {
     ttp_id_path: string;
 }
 
-export interface IExtractTTPStatusFunc {
-    (id: string): Promise<{
+export type IExtractTTPStatusFunc = (id: string) => Promise<{
         process_completed: boolean;
         status_info: string;
         process_id: string;
         status_code: number;
     }>
-}
 
 export interface IExtractTTPStatus {
     status_code: number;

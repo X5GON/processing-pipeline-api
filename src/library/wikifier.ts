@@ -26,10 +26,8 @@ export default class Wikifier {
 
     // processes the text
     async processText(text: string) {
-        let self = this;
-
         // separate text and prepare tasks for retrieving wiki concepts
-        let tasks = self._prepareWikifierTasks(text, self._maxLength);
+        const tasks = this._prepareWikifierTasks(text, this._maxLength);
 
         if (tasks.length === 0) {
             // there is nothing to extract - return empty objects
@@ -37,7 +35,7 @@ export default class Wikifier {
         }
 
         // create the parallel processing promise
-        let getWikipediaConcepts: Promise<Interfaces.IWikifierExtract> = new Promise((resolve, reject) => {
+        const getWikipediaConcepts: Promise<Interfaces.IWikifierExtract> = new Promise((resolve, reject) => {
             // get wikipedia concepts from text
             async.parallelLimit(tasks, 5, (error, concepts) => {
                 // reject the process if if doesn't go through
@@ -47,8 +45,8 @@ export default class Wikifier {
                     return reject(new Error("No concepts were extracted"));
                 }
                 // merge the returned wikipedia concepts
-                const wikipedia = self._mergeWikipediaConcepts(concepts);
-                const language = self._getDominantLanguage(wikipedia)[0];
+                const wikipedia = this._mergeWikipediaConcepts(concepts);
+                const language = this._getDominantLanguage(wikipedia)[0];
 
                 // return the statistics
                 return resolve({ wikipedia, language });
@@ -82,7 +80,7 @@ export default class Wikifier {
     async _getWikipediaConcepts(text: string, weight: number) {
         try {
             // make wikipedia concept request and handle concepts
-            let data: Interfaces.IWikifierResponse = await this._createRequest(text);
+            const data: Interfaces.IWikifierResponse = await this._createRequest(text);
             // get annotations
             let { annotations } = data;
 
@@ -100,7 +98,7 @@ export default class Wikifier {
             );
 
             // calculate the total pagerank from all concepts
-            let totalSum = annotations.reduce((sum, concept) =>
+            const totalSum = annotations.reduce((sum, concept) =>
                 sum + concept.pageRank ** 2,
                 0
             );
@@ -108,7 +106,7 @@ export default class Wikifier {
             // Noise reduction: get top 80% concepts
             let partialSum = 0;
             for (let i = 0; i < annotations.length; i++) {
-                let annotation = annotations[i];
+                const annotation = annotations[i];
                 partialSum += annotation.pageRank ** 2;
                 if (partialSum / totalSum > 0.8) {
                     // we found the top 80% concepts describing the text
@@ -121,7 +119,7 @@ export default class Wikifier {
             // Format wikipedia concepts
             ///////////////////////////////////////////////
 
-            let concepts = annotations.map((concept) => ({
+            const concepts = annotations.map((concept) => ({
                 uri: concept.url.toString(),
                 name: concept.title.toString(),
                 secUri: concept.secUrl || null,
@@ -143,20 +141,18 @@ export default class Wikifier {
 
     // prepares the text for wikification by splitting into smaller chunks
     _prepareWikifierTasks(text: string, maxLength: number) {
-        let self = this;
-
         // creates the material enriching task function
-        function _createWikifierTask(chunk: string, weight: number) {
+        const _createWikifierTask = (chunk: string, weight: number) => {
             return (callback: Interfaces.IWikifierTaskFunc) =>
                 // get the enriched materials
-                self._getWikipediaConcepts(chunk, weight)
+                this._getWikipediaConcepts(chunk, weight)
                     .then((concepts) => callback(null, concepts))
                     // if there is an error, return an empty array
                     .catch(() => callback(null, []));
         }
 
         // set placeholders
-        let tasks: Interfaces.IWikifierCreateTaskFunc[] = [];
+        const tasks: Interfaces.IWikifierCreateTaskFunc[] = [];
         let textIndex = 0;
 
         while (text.length > textIndex) {
@@ -188,7 +184,7 @@ export default class Wikifier {
             }
             // calculate the ratio that the found wikipedia concepts
             // will provide to the whole list of wikipedia concepts
-            let weight = chunk.length / text.length;
+            const weight = chunk.length / text.length;
             // add a new wikification task
             tasks.push(_createWikifierTask(chunk, weight));
         }

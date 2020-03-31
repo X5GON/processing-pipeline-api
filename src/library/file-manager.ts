@@ -122,10 +122,10 @@ export function executeOnFiles (startPath: string, filter: RegExp, callback: Int
         throw new Error(`directory given by "startPath" does not exist: ${startPath}`);
     }
     // get all file names and iterate through
-    let files = fs.readdirSync(startPath);
-    for (let file of files) {
-        let filename = path.join(startPath, file);
-        let stat = fs.lstatSync(filename);
+    const files = fs.readdirSync(startPath);
+    for (const file of files) {
+        const filename = path.join(startPath, file);
+        const stat = fs.lstatSync(filename);
 
         // check if file is a directory
         if (stat.isDirectory()) {

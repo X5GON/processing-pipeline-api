@@ -50,7 +50,7 @@ export default class KafkaConsumer {
             fetchMaxBytes: 1024 * 2048,
             outOfRangeOffset: "earliest",
             migrateHLC: false,
-            migrateRolling: true,
+            migrateRolling: true
         };
 
         // initialize the consumer group and flags
@@ -104,7 +104,7 @@ export default class KafkaConsumer {
             return null;
         }
         if (this._data.length > 0) {
-            let msg = this._data[0];
+            const msg = this._data[0];
             this._data = this._data.slice(1);
             if (this._data.length <= this._low_water) {
                 this._highWaterClearing = false;

@@ -53,25 +53,23 @@ export default class KafkaProducer {
 
     // sends the message to the appropirate topic
     send(topic: string, msg: any, cb: Interfaces.IGenericCallbackFunc) {
-        let self = this;
-
         // get set callback value
-        let callback = cb && typeof (cb) !== "function"
+        const callback = cb && typeof (cb) !== "function"
             ? (error: Error) => { if (error) { console.log(error); } }
             : cb;
 
         // prepare the message in string
         const messages = JSON.stringify(msg);
         const payload: k.ProduceRequest[] = [{ topic, messages }];
-        if (self._ready) {
+        if (this._ready) {
             // the producer is ready to send the messages
-            self._producer.send(payload, (error, data) => {
+            this._producer.send(payload, (error, data) => {
                 if (error) { return callback(error); }
                 return callback(null);
             });
         } else {
             // store the topic and message to send afterwards
-            self._payloads.push(payload);
+            this._payloads.push(payload);
             return callback(null);
         }
     }

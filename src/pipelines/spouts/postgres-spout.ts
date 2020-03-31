@@ -15,15 +15,15 @@ class PostgresRecords {
     private _timeInterval: number;
     private _interval: NodeJS.Timeout;
 
-    constructor(config: Interfaces.IPostgreSQLParams, SQL_statement: string, time_interval: number) {
+    constructor(config: Interfaces.IPostgreSQLParams, sqlStatement: string, timeInterval: number) {
         // the record container
         this._data = [];
         // esablish connection with database
         this._pg = new PostgreSQL(config);
         // store the SQL statement for future use
-        this._sqlStatement = SQL_statement;
+        this._sqlStatement = sqlStatement;
         // store the interval value for continuous retrieval
-        this._timeInterval = time_interval;
+        this._timeInterval = timeInterval;
         // the interval object
         this._interval = null;
     }
@@ -48,7 +48,7 @@ class PostgresRecords {
     next() {
         // get next data record
         if (this._data.length > 0) {
-            let record = this._data[0];
+            const record = this._data[0];
             this._data = this._data.splice(1);
             return record;
         } else {
@@ -124,7 +124,7 @@ class PostgresqlSpout extends BasicSpout {
 }
 
 
-const create = function () {
+const create = () => {
     return new PostgresqlSpout();
 }
 

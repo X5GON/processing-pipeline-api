@@ -7,7 +7,8 @@
       "no-namespace": false,
       "max-classes-per-file": [false, 20],
       "no-consecutive-blank-lines": false,
-      "arrow-parens": [true, "ban-single-arg-parens"],
+      "no-var-requires": false,
+      "arrow-parens": [true],
       "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
       "variable-name": [
         true,
