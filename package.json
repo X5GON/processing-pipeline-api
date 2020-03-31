@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/async": "^3.0.8",
-    "@types/bent": "^7.0.1",
+    "@types/bent": "^7.0.2",
     "@types/node": "^13.9.5",
     "@types/pg": "^7.14.3",
     "eslint": "^6.8.0",

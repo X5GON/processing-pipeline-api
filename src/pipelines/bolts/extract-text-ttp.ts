@@ -36,8 +36,8 @@ class ExtractTextTTP extends BasicBolt {
     private _documentTranscriptionsPath: string;
     private _ttpIDPath: string;
     private _documentErrorPath: string;
-    private _postRequest: bent.BentResponse;
-    private _getRequest: bent.BentResponse;
+    private _postRequest: bent.RequestFunction<any>;
+    private _getRequest: bent.RequestFunction<any>;
     private _delayObject: delay.ClearablePromise<void>;
 
     constructor() {
@@ -122,7 +122,7 @@ class ExtractTextTTP extends BasicBolt {
                 const {
                     status_code,
                     status_info
-                }: Interfaces.IExtractTTPStatus = await this._getRequest("/status", { ...this._ttpOptions, id });
+                } = await this._getRequest("/status", { ...this._ttpOptions, id });
                 if (status_code === 3) {
                     return {
                         process_completed: true,

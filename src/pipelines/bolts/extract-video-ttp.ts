@@ -30,8 +30,8 @@ class ExtractVideoTTP extends BasicBolt {
     private _documentTranscriptionsPath: string;
     private _ttpIDPath: string;
     private _documentErrorPath: string;
-    private _postRequest: bent.BentResponse;
-    private _getRequest: bent.BentResponse;
+    private _postRequest: bent.RequestFunction<any>;
+    private _getRequest: bent.RequestFunction<any>;
     private _delayObject: delay.ClearablePromise<void>;
 
     constructor() {

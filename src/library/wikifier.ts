@@ -10,7 +10,7 @@ export default class Wikifier {
     private _userKey: string;
     private _wikifierURL: string;
     private _maxLength: number;
-    private _postRequest: bent.BentResponse;
+    private _postRequest: bent.RequestFunction<any>;
 
     // creates the wikifier instance
     constructor(config: Interfaces.IWikifierParams) {
