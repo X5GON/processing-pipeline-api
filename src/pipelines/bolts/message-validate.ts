@@ -4,10 +4,14 @@
  * JSON Schema validator component.
  */
 
+// interfaces
+import * as Interfaces from "../../Interfaces";
+
 // modules
 import BasicBolt from "./basic-bolt";
 import * as jsonschema from "jsonschema";
 import Validator from "../../library/schema-validator";
+
 
 class MessageValidate extends BasicBolt {
 
@@ -22,7 +26,7 @@ class MessageValidate extends BasicBolt {
         this._context = null;
     }
 
-    async init(name: string, config: any, context: any) {
+    async init(name: string, config: Interfaces.IMessageValidateConfig, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
@@ -61,8 +65,6 @@ class MessageValidate extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = () => {
-    return new MessageValidate();
-}
+const create = () => new MessageValidate();
 
 export { create };

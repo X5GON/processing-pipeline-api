@@ -196,7 +196,7 @@ export default class PostgreSQL {
             RETURNING *;
         `;
         // execute the query
-        return this.execute(query, params);
+        return await this.execute(query, params);
     }
 
 
@@ -258,7 +258,7 @@ export default class PostgreSQL {
             RETURNING *;
         `;
         // execute the query
-        return this.execute(query, allParams);
+        return await this.execute(query, allParams);
     }
 
 

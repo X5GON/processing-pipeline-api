@@ -5,18 +5,15 @@
  * and retrieves the video content as raw text and dfxp.]
  */
 
-// external modules
-const rp = require("request-promise-native");
-// basic bolt template
-const BasicBolt = require("./basic-bolt");
+// modules
+import BasicBolt from "./basic-bolt";
+import Elasticsearch from "../../library/elasticsearch";
 
-/**
- * @class ElastisearchPatch
- * @description Extracts transcriptions and translations from the
- * provided videos. Supported languages are: english, spanish,
- * german, and slovene.
- */
-class ElastisearchPatch extends BasicBolt {
+class ElastisearchUpdate extends BasicBolt {
+
+    private _es: Elasticsearch;
+    private _finalBolt: boolean;
+
     constructor() {
         super();
         this._name = null;
@@ -24,35 +21,27 @@ class ElastisearchPatch extends BasicBolt {
         this._onEmit = null;
     }
 
-    init(name, config, context, callback) {
+    async init(name: string, config: any, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
-        this._prefix = `[ElastisearchPatch ${this._name}]`;
+        this._prefix = `[ElastisearchUpdate ${this._name}]`;
 
-        // the url of the TTP platform
-        this._searchUrl = config.search_url;
+        this._es = new Elasticsearch(config.elasticsearch);
 
-        // the path to where to store the error
-        this._documentErrorPath = config.document_error_path || "error";
-        // use other fields from config to control your execution
-        callback();
+        this._finalBolt = config.final_bolt;
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback) {
-        // prepare for gracefull shutdown, e.g. save state
-        callback();
+    async shutdown() {
+        // prepare for graceful shutdown, e.g. save state
     }
 
 
-    async receive(message, stream_id, callback) {
-        let self = this;
-
-
+    async receive(message: any, stream_id: string) {
         const {
             material_id,
             new_date,
@@ -64,9 +53,8 @@ class ElastisearchPatch extends BasicBolt {
             }
         } = message;
 
-
         // set the material contents
-        let material_contents = [];
+        let contents = [];
         // prepare list of material contents
         if (transcriptions) {
             for (let language in transcriptions) {
@@ -79,7 +67,7 @@ class ElastisearchPatch extends BasicBolt {
                         ? "transcription"
                         : "translation";
 
-                    material_contents.push({
+                    contents.push({
                         language,
                         type,
                         extension,
@@ -89,7 +77,7 @@ class ElastisearchPatch extends BasicBolt {
             }
         } else if (raw_text) {
             // prepare the material content object
-            material_contents.push({
+            contents.push({
                 language: origin_language,
                 type: "transcription",
                 extension: "plain",
@@ -97,32 +85,43 @@ class ElastisearchPatch extends BasicBolt {
             });
         }
 
+        let wikipedia = JSON.parse(JSON.stringify(wikipedia_concepts));
+
+        // modify the wikipedia array
+        for (const value of wikipedia) {
+            // rename the wikipedia concepts
+            value.sec_uri = value.secUri;
+            value.sec_name = value.secName;
+            value.pagerank = value.pageRank;
+            value.db_pedia_iri = value.dbPediaIri;
+            value.support = value.supportLen;
+            value.wiki_data_classes = value.wikiDataClasses;
+            // delete the previous values
+            delete value.secUri;
+            delete value.secName;
+            delete value.pageRank;
+            delete value.dbPediaIri;
+            delete value.supportLen;
+            delete value.wikiDataClasses;
+        }
+
         const record = {
             retrieved_date: new_date,
-            contents: material_contents,
-            wikipedia: wikipedia_concepts
+            contents,
+            wikipedia
         };
 
-        rp({
-            method: "PATCH",
-            uri: `${self._searchUrl}/${material_id}`,
-            body: { record },
-            json: true
-        })
-            .then(() => {
-            // continue with the last patching
-                if (self._finalBolt) { return callback(); }
-                return self._onEmit(message, stream_id, callback);
-            })
-            .catch((error) => {
-                if (self._finalBolt) { return callback(); }
-                // log error message and store the not completed material
-                self.set(message, self._documentErrorPath, `${self._prefix} ${error.message}`);
-                return self._onEmit(message, stream_id, callback);
-            });
+        // update the record in the elasticsearch index
+        await this._es.updateRecord("oer_materials", material_id, record);
+        // refresh the elasticsearch index
+        await this._es.refreshIndex("oer_materials");
+
+        // continue with the last patching
+        if (this._finalBolt) { return; }
+        return await this._onEmit(message, stream_id);
     }
 }
 
-exports.create = function (context) {
-    return new ElastisearchPatch(context);
-};
+const create = () => new ElastisearchUpdate();
+
+export { create };

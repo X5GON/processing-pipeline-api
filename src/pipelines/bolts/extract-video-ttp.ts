@@ -365,8 +365,7 @@ class ExtractVideoTTP extends BasicBolt {
     }
 }
 
-const create = () => {
-    return new ExtractVideoTTP();
-}
+// create a new instance of the bolt
+const create = () => new ExtractVideoTTP();
 
 export { create };

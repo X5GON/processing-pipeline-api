@@ -74,8 +74,6 @@ class ExtractWikipedia extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = () => {
-    return new ExtractWikipedia();
-}
+const create = () => new ExtractWikipedia();
 
 export { create };

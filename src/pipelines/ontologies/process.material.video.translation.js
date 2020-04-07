@@ -1,6 +1,8 @@
 // global configuration
 const config = require("@config/config");
 
+const formatMessages = require("../utils/format-materials");
+
 const productionMode = config.isProduction;
 
 // topology definition
@@ -33,7 +35,7 @@ module.exports = {
                     name: "log.material.process.started",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "input.kafka.video"
@@ -99,7 +101,7 @@ module.exports = {
                     name: "log.material.process.formatting",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "transform.material"
@@ -155,7 +157,7 @@ module.exports = {
                     name: "log.material.process.extract.video.ttp",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "extract.video.ttp"
@@ -208,7 +210,7 @@ module.exports = {
                     name: "log.material.process.extract.wikipedia",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "extract.wikipedia"
@@ -254,7 +256,7 @@ module.exports = {
                     name: "log.material.process.message.validate",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "message.validate"
@@ -293,8 +295,11 @@ module.exports = {
                 }
             ],
             init: {
-                kafka_host: config.kafka.host,
-                kafka_topic: "STORE_MATERIAL_COMPLETE"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "STORE_MATERIAL_COMPLETE"
+                },
+                format_message: formatMessages.formatMaterialComplete
             }
         },
 
@@ -383,7 +388,7 @@ module.exports = {
                     name: "log.material.process.error",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "transform.material.partial",
@@ -419,8 +424,11 @@ module.exports = {
                 }
             ],
             init: {
-                kafka_host: config.kafka.host,
-                kafka_topic: "STORE_MATERIAL_INCOMPLETE"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "STORE_MATERIAL_INCOMPLETE"
+                },
+                format_message: formatMessages.formatMaterialPartial
             }
         }
     ],

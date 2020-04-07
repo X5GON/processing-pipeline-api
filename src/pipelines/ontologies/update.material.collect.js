@@ -84,7 +84,7 @@ module.exports = {
                     name: "log.material.process.started",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "input.postgres.materials"
@@ -144,7 +144,7 @@ module.exports = {
             name: "update.material.redirect",
             type: "inproc",
             working_dir: "./bolts",
-            cmd: "update-material-redirect.js",
+            cmd: "message-redirect.js",
             inputs: [{ source: "update.material.transform" }],
             init: {}
         },
@@ -156,7 +156,7 @@ module.exports = {
                     name: "log.material.process.finished",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "update.material.redirect",
@@ -186,7 +186,7 @@ module.exports = {
             name: "kafka.material.update.text",
             type: "inproc",
             working_dir: "./bolts",
-            cmd: "kafka-message-forward.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: "update.material.redirect",
@@ -194,15 +194,17 @@ module.exports = {
                 }
             ],
             init: {
-                kafka_host: config.kafka.host,
-                kafka_topic: "UPDATE_MATERIAL_TEXT"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "UPDATE_MATERIAL_TEXT"
+                }
             }
         },
         {
             name: "kafka.material.update.video",
             type: "inproc",
             working_dir: "./bolts",
-            cmd: "kafka-message-forward.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: "update.material.redirect",
@@ -210,8 +212,10 @@ module.exports = {
                 }
             ],
             init: {
-                kafka_host: config.kafka.host,
-                kafka_topic: "UPDATE_MATERIAL_VIDEO"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "UPDATE_MATERIAL_VIDEO"
+                }
             }
         }
     ],

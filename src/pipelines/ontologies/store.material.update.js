@@ -51,7 +51,7 @@ module.exports = {
                     name: "log.material.process.update.stored",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "store.pg.material.update"
@@ -78,7 +78,7 @@ module.exports = {
             name: "store.pg.material.elasticsearch",
             type: "inproc",
             working_dir: "./bolts",
-            cmd: "es-patch-material.js",
+            cmd: "es-material-update.js",
             inputs: [
                 {
                     source: productionMode
@@ -87,7 +87,7 @@ module.exports = {
                 }
             ],
             init: {
-                search_url: `http://localhost:${config.search.port}/api/v1/oer_materials`,
+                elasticsearch: config.elasticsearch,
                 final_bolt: !productionMode
             }
         },
@@ -99,7 +99,7 @@ module.exports = {
                     name: "log.material.process.update.finished",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "store.pg.material.elasticsearch"

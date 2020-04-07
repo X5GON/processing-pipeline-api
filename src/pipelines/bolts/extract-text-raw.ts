@@ -102,8 +102,6 @@ class ExtractTextRaw extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = () => {
-    return new ExtractTextRaw();
-};
+const create = () => new ExtractTextRaw();
 
 export { create };

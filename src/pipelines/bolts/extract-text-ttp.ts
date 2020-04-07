@@ -374,8 +374,7 @@ class ExtractTextTTP extends BasicBolt {
     }
 }
 
-const create = () => {
-    return new ExtractTextTTP();
-}
+// create a new instance of the bolt
+const create = () => new ExtractTextTTP();
 
 export { create };

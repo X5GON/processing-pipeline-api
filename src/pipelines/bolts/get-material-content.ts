@@ -75,8 +75,6 @@ class RetrieveMaterialMetadata extends BasicBolt {
 }
 
 // create a new instance of the bolt
-const create = () => {
-    return new RetrieveMaterialMetadata();
-};
+const create = () => new RetrieveMaterialMetadata();
 
 export { create };

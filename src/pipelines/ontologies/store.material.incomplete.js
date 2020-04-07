@@ -47,7 +47,7 @@ module.exports = {
                     name: "log.material.process.finished",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "store.pg.material.partial"

@@ -3,6 +3,31 @@ export interface IGenericJSON { [key: string]: any; }
 export type IGenericExecFunc = (value?: any) => any;
 export type IGenericCallbackFunc = (error: Error, value?: any) => any;
 
+export interface IProcessMaterial {
+    title: string;
+    description?: string;
+    provider_uri: string;
+    material_url: string;
+    author?: string;
+    language: string;
+    creation_date?: string;
+    retrieved_date: string;
+    type: string;
+    mimetype: string;
+    material_metadata?: {
+        wikipedia_concepts?: any;
+        transcriptions?: any;
+        raw_text?: string;
+        metadata?: any;
+        ttp_id: string;
+    },
+    provider: {
+        token: string;
+    },
+    license: string;
+}
+
+
 /////////////////////////////////////////////////////////////////////
 // Configuration Interfaces
 /////////////////////////////////////////////////////////////////////
@@ -13,6 +38,7 @@ export interface IConfigRetriever {
     script: string;
     token: string;
     config: any;
+    [key: string]: any;
 }
 
 export interface IConfigCommon {
@@ -42,7 +68,7 @@ export interface IConfigEnvironment {
         port: number;
         database: string;
         max: number;
-        idleTimeoutMillis: string;
+        idleTimeoutMillis: number;
         user: string;
         password: string;
         schema: string;
@@ -74,7 +100,7 @@ export interface IConfiguration {
         port: number;
         database: string;
         max: number;
-        idleTimeoutMillis: string;
+        idleTimeoutMillis: number;
         user: string;
         password: string;
         schema: string;
@@ -340,9 +366,91 @@ export interface IExtractWikipediaConfig {
 }
 
 ///////////////////////////////////////
+// Message Forward Kafka
+///////////////////////////////////////
+
+export type IFormatMessage = (message: IProcessMaterial) => IGenericJSON;
+
+export interface IMessageForwardKafka {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    kafka: {
+        host: string;
+        topic: string;
+    }
+    format_message?: IFormatMessage
+}
+
+
+///////////////////////////////////////
+// Message Logging
+///////////////////////////////////////
+
+export interface IMessageLoggingConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    logging: {
+        file_name: string;
+        level: string;
+        sub_folder: string;
+        archive: boolean;
+        message_type: string;
+    },
+    final_bolt?: boolean;
+}
+
+///////////////////////////////////////
+// Message PostgreSQL
+///////////////////////////////////////
+
+export interface IMessagePostgreSQLConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    pg: {
+        host: string;
+        port: number;
+        database: string;
+        max: number;
+        idleTimeoutMillis: number;
+        user: string;
+        password: string;
+        schema: string;
+        version: string;
+    }
+    postgres_table: string;
+    postgres_method?: string;
+    postgres_primary_id: string;
+    postgres_message_attrs?: IGenericJSON;
+    postgres_time_attrs?: IGenericJSON;
+    postgres_literal_attrs?: IGenericJSON;
+    message_primary_id: string;
+    final_bolt?: boolean;
+    document_error_path?: string;
+}
+
+///////////////////////////////////////
 // Message Validate
 ///////////////////////////////////////
 
 export interface IMessageValidateConfig {
-    onEmit?: qtolopology.BoltEmitCallbackAsync
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    json_schema: jsonschema.Schema;
+    document_error_path?: string;
+}
+
+///////////////////////////////////////
+// Store XXXXXXXXXXX
+///////////////////////////////////////
+
+export interface IStoreConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    pg: {
+        host: string;
+        port: number;
+        database: string;
+        max: number;
+        idleTimeoutMillis: number;
+        user: string;
+        password: string;
+        schema: string;
+        version: string;
+    },
+    final_bolt?: boolean;
 }

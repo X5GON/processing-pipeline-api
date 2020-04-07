@@ -4,10 +4,30 @@
  * the provided PostgreSQL table (with the provided attributes).
  */
 
-// basic bolt template
-const BasicBolt = require("./basic-bolt");
+// interfaces
+import * as Interfaces from "../../Interfaces";
 
-class LogMessagePostgreSQL extends BasicBolt {
+// modules
+import BasicBolt from "./basic-bolt";
+import PostgreSQL from "../../library/postgresQL";
+
+class MessagePostgreSQL extends BasicBolt {
+
+    private _pg: PostgreSQL;
+    private _postgresTable: string;
+    private _postgresMethod: string;
+    private _postgresPrimaryId: string;
+    private _messagePrimaryId: string;
+
+    private _postgresMessageAttrs: Interfaces.IGenericJSON;
+    private _postgresTimeAttrs: Interfaces.IGenericJSON;
+    private _postgresLiteralAttrs: Interfaces.IGenericJSON;
+
+    private _finalBolt: boolean;
+
+    private _documentErrorPath: string;
+
+
     constructor() {
         super();
         this._name = null;
@@ -15,14 +35,14 @@ class LogMessagePostgreSQL extends BasicBolt {
         this._context = null;
     }
 
-    init(name, config, context, callback) {
+    async init(name: string, config: Interfaces.IMessagePostgreSQLConfig, context: any) {
         this._name = name;
         this._context = context;
         this._onEmit = config.onEmit;
         this._prefix = `[StorePostgreSQL ${this._name}]`;
 
         // create the postgres connection
-        this._pg = require("@library/postgresQL")(config.pg);
+        this._pg = new PostgreSQL(config.pg);
 
         this._postgresTable = config.postgres_table;
         this._postgresMethod = config.postgres_method || "update";
@@ -37,52 +57,50 @@ class LogMessagePostgreSQL extends BasicBolt {
 
         // the path to where to store the error
         this._documentErrorPath = config.document_error_path || "error";
-
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback) {
-        this._pg.close(callback);
+    async shutdown() {
+        // prepare for graceful shutdown, e.g. save state
+        await this._pg.close();
     }
 
-    receive(message, stream_id, callback) {
-        let self = this;
+    async receive(message: any, stream_id: string) {
 
         // /////////////////////////////////////////
         // PREPARE THE UPDATE AND PRIMARY ATTRS
         // /////////////////////////////////////////
 
         const primaryAttrs = {
-            [self._postgresPrimaryId]: self.get(message, self._messagePrimaryId)
+            [this._postgresPrimaryId]: this.get(message, this._messagePrimaryId)
         };
 
         // add the primary key to the update attributes (required to update the records)
         let updateAttrs = {
-            [self._postgresPrimaryId]: self.get(message, self._messagePrimaryId)
+            [this._postgresPrimaryId]: this.get(message, this._messagePrimaryId)
         };
 
         if (this._postgresMessageAttrs) {
             // populate the update attributes with the message values
-            for (let attr in self._postgresMessageAttrs) {
-                updateAttrs[attr] = self.get(message, self._postgresMessageAttrs[attr]);
+            for (let attr in this._postgresMessageAttrs) {
+                updateAttrs[attr] = this.get(message, this._postgresMessageAttrs[attr]);
             }
         }
 
         if (this._postgresTimeAttrs) {
             // populate the update attributes with the given time values
-            for (let time in self._postgresTimeAttrs) {
+            for (let time in this._postgresTimeAttrs) {
                 updateAttrs[time] = (new Date()).toISOString();
             }
         }
 
         if (this._postgresLiteralAttrs) {
             // populate the update attributes with the given values
-            for (let attr in self._postgresLiteralAttrs) {
-                updateAttrs[attr] = self._postgresLiteralAttrs[attr];
+            for (let attr in this._postgresLiteralAttrs) {
+                updateAttrs[attr] = this._postgresLiteralAttrs[attr];
             }
         }
 
@@ -92,19 +110,23 @@ class LogMessagePostgreSQL extends BasicBolt {
         // /////////////////////////////////////////
 
         // update the record attributes with the given attributes
-        self._pg[this._postgresMethod](updateAttrs, primaryAttrs, self._postgresTable, (error, result) => {
-            if (error) {
-                // update the message with the error
-                this.set(message, self._documentErrorPath, error.message);
-                if (self.final_bolt) { return callback(error); }
-                return this._onEmit(message, "stream_error", callback);
-            }
-            if (self.final_bolt) { return callback(); }
-            return this._onEmit(message, stream_id, callback);
-        });
+        let streamID = stream_id;
+        try {
+            await this._pg[this._postgresMethod](updateAttrs, primaryAttrs, this._postgresTable);
+        } catch (error) {
+            // update the message with the error
+            this.set(message, this._documentErrorPath, error.message);
+            streamID = "stream_error";
+        }
+        // if this is the final bolt
+        if (this._finalBolt) { return; }
+        // otherwise continue with the stream
+        return await this._onEmit(message, streamID);
     }
 }
 
-exports.create = function (context) {
-    return new LogMessagePostgreSQL(context);
-};
+// create a new instance of the bolt
+const create = () => new MessagePostgreSQL();
+
+export { create };
+

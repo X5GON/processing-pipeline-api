@@ -33,7 +33,7 @@ module.exports = {
                     name: "log.material.update.started",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "input.kafka.text"
@@ -81,7 +81,7 @@ module.exports = {
                     name: "log.material.update.get.material.content",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "get.material.content"
@@ -135,7 +135,7 @@ module.exports = {
                     name: "log.material.update.extract.text.raw",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "extract.text.raw"
@@ -190,7 +190,7 @@ module.exports = {
                     name: "log.material.update.extract.text.ttp",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "extract.text.ttp"
@@ -243,7 +243,7 @@ module.exports = {
                     name: "log.material.update.extract.wikipedia",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "extract.wikipedia"
@@ -274,7 +274,7 @@ module.exports = {
             name: "kafka.material.content",
             type: "inproc",
             working_dir: "./bolts",
-            cmd: "kafka-message-forward.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: productionMode
@@ -283,8 +283,10 @@ module.exports = {
                 }
             ],
             init: {
-                kafka_host: config.kafka.host,
-                kafka_topic: "UPDATE_MATERIAL_CONTENT"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "UPDATE_MATERIAL_CONTENT"
+                }
             }
         },
 
@@ -295,7 +297,7 @@ module.exports = {
                     name: "log.material.update.error",
                     type: "inproc",
                     working_dir: "./bolts",
-                    cmd: "log-message-postgresql.js",
+                    cmd: "message-postgresql.js",
                     inputs: [
                         ...(productionMode
                             ? [

@@ -52,7 +52,7 @@ export default class KafkaProducer {
     }
 
     // sends the message to the appropirate topic
-    send(topic: string, msg: any, cb: Interfaces.IGenericCallbackFunc) {
+    send(topic: string, msg: any, cb?: Interfaces.IGenericCallbackFunc) {
         // get set callback value
         const callback = cb && typeof (cb) !== "function"
             ? (error: Error) => { if (error) { console.log(error); } }
