@@ -55,9 +55,13 @@ class MessageForwardKafka extends BasicBolt {
         }
 
         // send the message to the database topics
-        this._kafkaProducer.send(this._kafkaTopic, message, () => {
-            return;
+        const promise = new Promise((resolve, reject) => {
+            this._kafkaProducer.send(this._kafkaTopic, message, () => {
+                return resolve();
+            });
         });
+        await promise;
+        return;
     }
 }
 

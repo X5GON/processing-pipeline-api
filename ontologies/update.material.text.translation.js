@@ -174,7 +174,7 @@ module.exports = {
                     user: config.ttp.user,
                     token: config.ttp.token
                 },
-                temporary_folder: "./tmp",
+                temporary_folder: "../tmp",
                 document_title_path: "title",
                 document_language_path: "language",
                 document_text_path: "material_metadata.raw_text",

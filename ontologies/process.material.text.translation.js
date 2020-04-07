@@ -193,7 +193,7 @@ module.exports = {
                     user: config.ttp.user,
                     token: config.ttp.token
                 },
-                temporary_folder: "./tmp",
+                temporary_folder: "../tmp",
                 document_title_path: "title",
                 document_language_path: "language",
                 document_text_path: "material_metadata.raw_text",
@@ -338,7 +338,7 @@ module.exports = {
             name: "kafka.material.complete",
             type: "inproc",
             working_dir: "./pipelines/bolts",
-            cmd: "kafka-material-complete.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: productionMode
@@ -478,7 +478,7 @@ module.exports = {
             name: "kafka.material.partial",
             type: "inproc",
             working_dir: "./pipelines/bolts",
-            cmd: "kafka-material-partial.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: productionMode
