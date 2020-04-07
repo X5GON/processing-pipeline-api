@@ -60,14 +60,14 @@ class StoreUserActivities extends BasicBolt {
         // /////////////////////////////////////////
 
         // cookie information
-        let cookies = {
+        const cookies = {
             uuid,
             user_agent,
             language: language || ""
         };
 
         // user activities information
-        let user_activities = {
+        const user_activities = {
             referrer_url,
             timestamp,
             cookie_id: null,
@@ -78,7 +78,6 @@ class StoreUserActivities extends BasicBolt {
             // /////////////////////////////////////////
             // SAVE COOKIES and URLS
             // /////////////////////////////////////////
-
             // send cookies and urls into the database
             const cookieRecords = await this._pg.upsert(cookies, { uuid: null }, "cookies");
 
@@ -108,7 +107,9 @@ class StoreUserActivities extends BasicBolt {
                 };
                 await updateUserModel(activity);
             }
-        } catch (error) { }
+        } catch (error) {
+            // error handler
+        }
     }
 }
 

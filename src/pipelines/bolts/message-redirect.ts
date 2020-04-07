@@ -30,14 +30,14 @@ class MessageRedirect extends BasicBolt {
     }
 
     async receive(material: Interfaces.IProcessMaterial, stream_id: string) {
-        let {
+        const {
             mimetype,
             retrieved_date
         } = material;
 
-        let date = new Date(retrieved_date);
+        const date = new Date(retrieved_date);
         // check if the video and audio materials were retrieved before 2019-07-01
-        let limitDate = new Date("2019-08-01");
+        const limitDate = new Date("2019-08-01");
         if (date >= limitDate) {
             stream_id = "updated";
         } else if (mimetypes.video.includes(mimetype)) {

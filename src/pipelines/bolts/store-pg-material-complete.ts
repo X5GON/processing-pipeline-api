@@ -68,7 +68,7 @@ class StoreMaterialComplete extends BasicBolt {
             // SAVE MATERIAL CONTENTS
             // /////////////////////////////////////////
 
-            for (let material_content of material_contents) {
+            for (const material_content of material_contents) {
                 material_content.material_id = material_id;
                 material_content.last_updated = newDate;
                 // add the task of pushing material contents
@@ -95,13 +95,13 @@ class StoreMaterialComplete extends BasicBolt {
             const provider_id = providers.length ? providers[0].id : null;
 
             // set the provider id if inside the database
-            let material_url = {
+            const material_url = {
                 url: urls.material_url,
                 material_id,
                 ...provider_id && { provider_id }
             };
 
-            let provider_uri = {
+            const provider_uri = {
                 url: urls.provider_uri,
                 ...provider_id && { provider_id }
             };
@@ -128,7 +128,9 @@ class StoreMaterialComplete extends BasicBolt {
 
             if (this._finalBolt) { return; }
             return this._onEmit(message, stream_id);
-        } catch (error) { }
+        } catch (error) {
+            // error handling
+        }
     }
 }
 

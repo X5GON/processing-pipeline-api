@@ -38,7 +38,7 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
         authors_copy = author
             .replace(/[{\"}]/g, "")
             .split(",")
-            .map(str => str.trim());
+            .map((str) => str.trim());
         if (authors_copy.length === 1 && authors_copy[0] === "") {
             authors_copy = null;
         }
@@ -48,24 +48,22 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
     // PREPARE MATERIAL CONTENTS
     // /////////////////////////////////////////
 
-    let material_contents = [];
+    const material_contents = [];
     // prepare list of material contents
     if (transcriptions) {
-        let languages = Object.keys(transcriptions);
-        for (let language of languages) {
-            let extensions = Object.keys(transcriptions[language]);
-            for (let extension of extensions) {
+        for (const language of Object.keys(transcriptions)) {
+            for (const extension of Object.keys(transcriptions[language])) {
                 // get value of the language and extension
                 const value = transcriptions[language][extension];
 
                 // define the type of the transcriptions
-                const type = language === origin_language
+                const contentType = language === origin_language
                     ? "transcription"
                     : "translation";
 
                 material_contents.push({
                     language,
-                    type,
+                    type: contentType,
                     extension,
                     value: { value },
                     material_id: null,
@@ -90,7 +88,7 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
     // /////////////////////////////////////////
 
     // prepare of public feature - wikipedia concept
-    let features_public = {
+    const features_public = {
         name: "wikipedia_concepts",
         value: { value: wikipedia_concepts },
         re_required: true,
@@ -131,10 +129,10 @@ export function formatMaterialPartial (material: Interfaces.IProcessMaterial) {
     // rebrand the attribute name
     let authorList: string[];
     if (material.author) {
-        let authorList = material.author
+        authorList = material.author
             .replace(/[{\"}]/g, "")
             .split(",")
-            .map(str => str.trim());
+            .map((str) => str.trim());
         if (authorList.length === 1 && authorList[0] === "") {
             authorList = null;
         }

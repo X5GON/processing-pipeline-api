@@ -60,8 +60,8 @@ class StoreRecsysTransitions extends BasicBolt {
 
             const materialIDs = await Promise.all(fromToMaterialIDs)
 
-            let fromMaterialID = materialIDs[0].length ? materialIDs[0][0].id : null;
-            let toMaterialID = materialIDs[1].length ? materialIDs[1][0].id : null;
+            const fromMaterialID = materialIDs[0].length ? materialIDs[0][0].id : null;
+            const toMaterialID = materialIDs[1].length ? materialIDs[1][0].id : null;
 
             // create user transitions values
             const rec_sys_user_transitions = {
@@ -75,7 +75,9 @@ class StoreRecsysTransitions extends BasicBolt {
                 num_of_recommendations: recommended_urls.length
             };
             await this._pg.insert(rec_sys_user_transitions, "rec_sys_user_transitions");
-        } catch (error) { }
+        } catch (error) {
+            // error handling
+        }
     }
 }
 

@@ -79,27 +79,27 @@ class MessagePostgreSQL extends BasicBolt {
         };
 
         // add the primary key to the update attributes (required to update the records)
-        let updateAttrs = {
+        const updateAttrs = {
             [this._postgresPrimaryId]: this.get(message, this._messagePrimaryId)
         };
 
         if (this._postgresMessageAttrs) {
             // populate the update attributes with the message values
-            for (let attr in this._postgresMessageAttrs) {
+            for (const attr of Object.keys(this._postgresMessageAttrs)) {
                 updateAttrs[attr] = this.get(message, this._postgresMessageAttrs[attr]);
             }
         }
 
         if (this._postgresTimeAttrs) {
             // populate the update attributes with the given time values
-            for (let time in this._postgresTimeAttrs) {
+            for (const time of Object.keys(this._postgresTimeAttrs)) {
                 updateAttrs[time] = (new Date()).toISOString();
             }
         }
 
         if (this._postgresLiteralAttrs) {
             // populate the update attributes with the given values
-            for (let attr in this._postgresLiteralAttrs) {
+            for (const attr of Object.keys(this._postgresLiteralAttrs)) {
                 updateAttrs[attr] = this._postgresLiteralAttrs[attr];
             }
         }

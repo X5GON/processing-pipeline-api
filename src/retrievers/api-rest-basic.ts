@@ -3,7 +3,9 @@ import * as mime from "mime-types";
 
 export default class BasicRESTAPI {
 
-    constructor() { }
+    constructor() {
+        // constructor
+    }
 
     start() {
         throw new Error("[start] not implemented");

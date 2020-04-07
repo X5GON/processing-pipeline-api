@@ -19,7 +19,7 @@ const schema = config.pg.schema;
 
 // Copies attributes from the second object to the first one
 function addObjects(objectA: any, objectB: any) {
-    for (let c in objectB) {
+    for (const c of Object.keys(objectB)) {
         if (objectA.hasOwnProperty(c)) {
             objectA[c] += objectB[c];
         } else {
@@ -31,7 +31,7 @@ function addObjects(objectA: any, objectB: any) {
 
 // Multiplies attributes of the provided object with the provided value.
 function multiplyObjects(objectA: any, num: number) {
-    for (let c in objectA) {
+    for (const c of Object.keys(objectA)) {
         objectA[c] *= num;
     }
     return objectA;
@@ -51,10 +51,10 @@ export default async function updateUserModel(activity: { uuid: string, urls: st
         const user_model = await pg.execute(`SELECT * FROM ${schema}.rec_sys_user_model WHERE uuid='${uuid}';`, []);
 
         // escape the provider uri and query for material models
-        let escapedUris = urls.map(url => url.replace("'", "''"));
+        const escapedUris = urls.map((url) => url.replace("'", "''"));
 
         // get the user model
-        let user = user_model.length !== 0
+        const user = user_model.length !== 0
             ? user_model[0]
             : {
                 uuid: activity.uuid,
@@ -69,7 +69,7 @@ export default async function updateUserModel(activity: { uuid: string, urls: st
         const material_models = await pg.execute(`SELECT * FROM ${schema}.rec_sys_material_model WHERE provider_uri SIMILAR TO '%(${escapedUris.join("|")})%'`, []);
 
         // get or create user model
-        for (let material of material_models) {
+        for (const material of material_models) {
             // check if the user has visited the material before
             if (material && user) {
                 if (user.visited.hasOwnProperty(material.provider_uri)) {
@@ -106,6 +106,8 @@ export default async function updateUserModel(activity: { uuid: string, urls: st
         // insert or update the user model to the database
         await pg.upsert(user, { uuid: null }, `${schema}.rec_sys_user_model`);
 
-    } catch (error) { }
+    } catch (error) {
+        // error handling
+    }
 }
 

@@ -46,8 +46,6 @@ class StoreMaterialUpdate extends BasicBolt {
     }
 
     async receive(message: any, stream_id: string) {
-        let self = this;
-
         const {
             material_id,
             language: origin_language,
@@ -75,12 +73,12 @@ class StoreMaterialUpdate extends BasicBolt {
             // /////////////////////////////////////////
 
             // set the material contents
-            let material_contents = [];
+            const material_contents = [];
 
             // prepare list of material contents
             if (transcriptions) {
-                for (let language in transcriptions) {
-                    for (let extension in transcriptions[language]) {
+                for (const language of Object.keys(transcriptions)) {
+                    for (const extension of Object.keys(transcriptions[language])) {
                         // get value of the language and extension
                         const value = transcriptions[language][extension];
 
@@ -111,7 +109,7 @@ class StoreMaterialUpdate extends BasicBolt {
                 });
             }
 
-            for (let material_content of material_contents) {
+            for (const material_content of material_contents) {
                 // add the task of pushing material contents
                 await this._pg.insert(material_content, "material_contents");
             }
@@ -121,7 +119,7 @@ class StoreMaterialUpdate extends BasicBolt {
             // /////////////////////////////////////////
 
             // prepare of public feature - wikipedia concept
-            let features_public = {
+            const features_public = {
                 name: "wikipedia_concepts",
                 value: { value: wikipedia_concepts },
                 re_required: true,
@@ -149,10 +147,12 @@ class StoreMaterialUpdate extends BasicBolt {
             // RUN THE TASKS
             // /////////////////////////////////////////
 
-            if (self._finalBolt) { return; }
-            return await self._onEmit(message, stream_id);
+            if (this._finalBolt) { return; }
+            return await this._onEmit(message, stream_id);
 
-        } catch (error) { }
+        } catch (error) {
+            // error handling
+        }
     }
 }
 // create a new instance of the bolt

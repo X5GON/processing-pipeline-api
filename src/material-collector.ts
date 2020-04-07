@@ -35,19 +35,19 @@ class MaterialCollector {
 
     private _productionModeFlag: boolean;
 
-    constructor(config: Interfaces.IConfiguration) {
+    constructor(params: Interfaces.IConfiguration) {
         // set postgresQL connection
-        this._pg = new PostgreSQL(config.pg);
+        this._pg = new PostgreSQL(params.pg);
 
         // set kafka consumer & producers
         this._consumer = new KafkaConsumer({
-            host: config.kafka.host,
+            host: params.kafka.host,
             topic: "STORE_USERACTIVITY_VISIT",
-            groupId: `${config.kafka.groupId}.MATERIAL.COLLECTOR`,
+            groupId: `${params.kafka.groupId}.MATERIAL.COLLECTOR`,
             high_water: 10,
             low_water: 1
         });
-        this._producer = new KafkaProducer(config.kafka.host);
+        this._producer = new KafkaProducer(params.kafka.host);
         // define kafka topic names
         this._textTopic = "PREPROC_MATERIAL_TEXT";
         this._videoTopic = "PREPROC_MATERIAL_VIDEO";
@@ -55,14 +55,14 @@ class MaterialCollector {
         // initialize retriever list
         this._apis = [];
         // go through retriever configurations and add them to the list
-        for (let retriever of config.retrievers) {
+        for (const retriever of params.retrievers) {
             retriever.config.callback = this._sendMaterials.bind(this);
             retriever.config.token = retriever.token;
             retriever.config.pg = this._pg;
             this.addRetriever(retriever);
         }
         // set the production mode flag
-        this._productionModeFlag = config.isProduction;
+        this._productionModeFlag = params.isProduction;
         // got initialization process
         logger.info("[MaterialCollector] collector initialized");
     }
@@ -71,13 +71,13 @@ class MaterialCollector {
     // adds an API retriever to the list
     addRetriever(settings: Interfaces.IConfigRetriever) {
         // if retriever is already set skip its addition
-        for (let api of this._apis) {
+        for (const api of this._apis) {
             // check if retriever is already in added
             if (settings.token === api.token) { return false; }
         }
 
         // initialize the retriever given by the config file
-        let retriever = new (require(`./retrievers/${settings.script}`))(settings.config);
+        const retriever = new (require(`./retrievers/${settings.script}`))(settings.config);
         // add retriever to the list
         this._apis.push({
             name: settings.name,
@@ -119,13 +119,13 @@ class MaterialCollector {
     startRetriever(token: string) {
         let started = false;
         // go through all of the apis and start the appropriate retriever
-        for (let i = 0; i < this._apis.length; i++) {
-            if (token === this._apis[i].token) {
+        for (const api of this._apis) {
+            if (token === api.token) {
                 logger.info("[Retriever] start retriever", {
-                    name: this._apis[i].name,
-                    domain: this._apis[i].domain
+                    name: api.name,
+                    domain: api.domain
                 });
-                this._apis[i].retriever.start();
+                api.retriever.start();
                 started = true;
                 break;
             }
@@ -137,22 +137,23 @@ class MaterialCollector {
     stopRetriever(token: string, allFlag=false) {
         if (allFlag) {
             // stop all retrievers
-            for (let i = 0; i < this._apis.length; i++) {
+            for (const api of this._apis) {
                 logger.info("[Retriever] stop all retrievers");
-                this._apis[i].retriever.stop();
+                api.retriever.stop();
             }
             return true;
         } else {
             let stopped = false;
             // go through all of the apis and stop the appropriate retriever
-            for (let i = 0; i < this._apis.length; i++) {
-                if (token === this._apis[i].token) {
+            for (const api of this._apis) {
+                if (token === api.token) {
                     logger.info("[Retriever] stop retriever", {
-                        name: this._apis[i].name,
-                        domain: this._apis[i].domain
+                        name: api.name,
+                        domain: api.domain
                     });
-                    this._apis[i].retriever.stop();
-                    stopped = true; break;
+                    api.retriever.stop();
+                    stopped = true;
+                    break;
                 }
             }
             return stopped;
@@ -192,7 +193,7 @@ class MaterialCollector {
 
         } else if (log.provider) {
             // find the appropriate retriever for retrieving the materials
-            for (let api of this._apis) {
+            for (const api of this._apis) {
                 // find the retriver based on the provider token
                 if (log.provider === api.token) {
                     logger.info("[Retriever] process next log with retriever", {
@@ -224,7 +225,7 @@ class MaterialCollector {
             });
             return;
         }
-        for (let material of materials) {
+        for (const material of materials) {
             // get material mimetype and decide where to send the material metadata
             const mimetype = material.type.mime;
             if (mimetype && mimetypes.video.includes(mimetype)) {
@@ -243,9 +244,7 @@ class MaterialCollector {
 
     // sends the material to the appropriate kafka topic.
     async _sendToKafka(material: any, topic: string, type: string) {
-        let self = this;
-
-        if (self._productionModeFlag) {
+        if (this._productionModeFlag) {
             try {
                // insert to postgres process pipeline
                 await this._pg.upsert({ url: material.material_url }, { url: null }, "material_process_queue");
@@ -261,7 +260,7 @@ class MaterialCollector {
         }
         logger.info(`[upload] ${type} material = ${material.material_url}`);
         // send material to kafka
-        return self._producer.send(topic, material);
+        return this._producer.send(topic, material);
     }
 }
 
@@ -275,7 +274,7 @@ const collector = new MaterialCollector(config);
 
 // set interval to check for new log after every second
 const interval = setInterval(() => {
-    collector.processNext().catch(error => { console.log(error); });
+    collector.processNext().catch((error) => { console.log(error); });
 }, 1000);
 
 

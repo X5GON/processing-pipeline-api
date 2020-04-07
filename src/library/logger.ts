@@ -36,13 +36,13 @@ class Logger {
     }
 
     // creates a daily-rotate-file transport
-    _transportCreator(filename: string, dirname: string, level: string, archive: boolean) {
+    _transportCreator(filename: string, dirname: string, level: string, archiveFlag: boolean) {
         if (!filename) {
             throw new Error("Parameter 'fileName' not provided");
         }
 
         // create daily transport
-        let transport = new (DailyRotateFile)({
+        const transport = new (DailyRotateFile)({
             filename,
             dirname,
             datePattern: "YYYY-MM-DD",
@@ -54,11 +54,11 @@ class Logger {
         });
 
         // creates the file name
-        function createFilename(level: string, year: string | number, month: string | number) {
-            return `${year}-${month}-${level}`;
+        function createFilename(lvl: string, year: string | number, month: string | number) {
+            return `${year}-${month}-${lvl}`;
         }
 
-        if (archive) {
+        if (archiveFlag) {
             // action on rotate event
             transport.on("rotate", (oldFilename: string, newFilename: string) => {
                 // get dates of the filenames
@@ -74,7 +74,7 @@ class Logger {
                 // if the months don't match; archive second-to-last month folder
                 if (oldDate[1] !== newDate[1]) {
                     // get second-to-last month and year
-                    let tempMonth = parseInt(oldDate[1], 10) - 1;
+                    const tempMonth = parseInt(oldDate[1], 10) - 1;
 
                     const prevMonth = tempMonth === 0 ? 12 : tempMonth;
                     const prevYear = prevMonth === 12 ? parseInt(oldDate[0], 10) - 1 : parseInt(oldDate[0], 10);
@@ -88,7 +88,7 @@ class Logger {
                         const output = fs.createWriteStream(`${prevFolderPath}.tar.gz`);
 
                         // zip up the archive folders
-                        let archive = archiver("tar", {
+                        const archive = archiver("tar", {
                             gzip: true,
                             gzipOptions: { level: 9 } // set the compression level
                         });
@@ -111,9 +111,9 @@ class Logger {
 
     // creates a logger instance
     createInstance(filename: string, level="info", subFolder="", consoleFlag=true, archive=false) {
-        let logger_transports = [];
+        const logger_transports = [];
         // initialize folder path and create it
-        let dirname = path.join(this._folder, subFolder);
+        const dirname = path.join(this._folder, subFolder);
         fileManager.createDirectoryPath(dirname);
         // add console logging transport to the instance
         if (consoleFlag) {
@@ -129,7 +129,7 @@ class Logger {
         // add a file rotation transport
         logger_transports.push(this._transportCreator(filename, dirname, level, archive));
         // create a logger instance
-        let logger = createLogger({
+        const logger = createLogger({
             transports: logger_transports
         });
         // create a logger instance and return it
@@ -139,9 +139,9 @@ class Logger {
 
     // create a logger instance that write in three different files: `info`, `warn` and `error`
     createGroupInstance(filename: string, subFolder="", consoleFlag=true, archive=false) {
-        let logger_transports = [];
+        const logger_transports = [];
         // initialize folder path and create it
-        let dirname = path.join(this._folder, subFolder);
+        const dirname = path.join(this._folder, subFolder);
         fileManager.createDirectoryPath(dirname);
         // add console logging transport to the instance
         if (consoleFlag) {
@@ -158,7 +158,7 @@ class Logger {
         logger_transports.push(this._transportCreator(`${filename}-warn`, dirname, "warn", archive));
         logger_transports.push(this._transportCreator(`${filename}-error`, dirname, "error", archive));
         // create a logger instance
-        let logger = createLogger({
+        const logger = createLogger({
             transports: logger_transports
         });
         // create a logger instance and return it

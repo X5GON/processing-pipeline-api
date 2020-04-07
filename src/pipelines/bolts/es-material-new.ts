@@ -86,8 +86,8 @@ class ElastisearchNew extends BasicBolt {
         } = message;
 
 
-        let contents = [];
-        for (let content of material_contents) {
+        const contents = [];
+        for (const content of material_contents) {
             contents.push({
                 language: content.language,
                 type: content.type,
@@ -118,7 +118,7 @@ class ElastisearchNew extends BasicBolt {
             shortName = NO_LICENSE_DISCLAIMER;
         }
 
-        let wikipedia = JSON.parse(JSON.stringify(features_public.value.value));
+        const wikipedia = JSON.parse(JSON.stringify(features_public.value.value));
         // modify the wikipedia array
         for (const value of wikipedia) {
             // rename the wikipedia concepts

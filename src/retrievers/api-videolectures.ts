@@ -48,7 +48,7 @@ export default class VideolecturesAPI extends RestBasic {
             throw new Error(`[API-Videolectures get] lecture not found for url=${url}`);
         }
 
-        let materialRequests = [];
+        const materialRequests = [];
 
         const materials = lecture.results[0];
         for (const video of materials.videos) {
@@ -62,7 +62,7 @@ export default class VideolecturesAPI extends RestBasic {
         }
 
         // create a container for oer materials
-        let oerList = [];
+        const oerList = [];
         for (const attachments of contents) {
             for (const file of attachments.attachments) {
                 const display = file.type_display;
@@ -77,7 +77,7 @@ export default class VideolecturesAPI extends RestBasic {
             }
         }
         // get all materials and filter out the empty ones
-        return oerList.filter(material => material);
+        return oerList.filter((material) => material);
     }
 
     // /////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ export default class VideolecturesAPI extends RestBasic {
     // formats the videolecture material
     _prepareMaterial(params: any) {
         // get material metadata
-        let {
+        const {
             materials: {
                 title,
                 description,
@@ -97,16 +97,14 @@ export default class VideolecturesAPI extends RestBasic {
                 time
             },
             file: {
-                src,
-                ext,
-                mimetype
+                src
             },
             part
         } = params;
 
         // fix mimetype and extension if required
-        mimetype = mimetype || super.mimetype(src);
-        ext = ext || super.extension(mimetype);
+        const mimetype = params.file.mimetype || super.mimetype(src);
+        const ext = params.file.ext || super.extension(mimetype);
 
         // return the material object
         return {

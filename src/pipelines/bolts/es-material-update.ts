@@ -49,16 +49,16 @@ class ElastisearchUpdate extends BasicBolt {
             material_metadata: {
                 raw_text,
                 transcriptions,
-                wikipedia_concepts,
+                wikipedia_concepts
             }
         } = message;
 
         // set the material contents
-        let contents = [];
+        const contents = [];
         // prepare list of material contents
         if (transcriptions) {
-            for (let language in transcriptions) {
-                for (let extension in transcriptions[language]) {
+            for (const language of Object.keys(transcriptions)) {
+                for (const extension of Object.keys(transcriptions[language])) {
                     // get value of the language and extension
                     const value = transcriptions[language][extension];
 
@@ -81,11 +81,11 @@ class ElastisearchUpdate extends BasicBolt {
                 language: origin_language,
                 type: "transcription",
                 extension: "plain",
-                value: raw_text,
+                value: raw_text
             });
         }
 
-        let wikipedia = JSON.parse(JSON.stringify(wikipedia_concepts));
+        const wikipedia = JSON.parse(JSON.stringify(wikipedia_concepts));
 
         // modify the wikipedia array
         for (const value of wikipedia) {

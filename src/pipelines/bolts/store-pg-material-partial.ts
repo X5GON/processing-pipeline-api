@@ -55,7 +55,9 @@ class StoreMaterialPartial extends BasicBolt {
             await this._pg.upsert(oer_materials_partial, { materialurl: null }, "oer_materials_partial");
             if (this._finalBolt) { return; }
             return await this._onEmit(message, stream_id);
-        } catch (error) { }
+        } catch (error) {
+            // error handling
+        }
     }
 }
 
