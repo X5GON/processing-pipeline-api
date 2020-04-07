@@ -1,5 +1,5 @@
 // configurations
-const config = require("@config/config");
+const { default: config } = require("../dist/config/config");
 
 module.exports = {
     general: {
@@ -10,15 +10,16 @@ module.exports = {
         {
             name: "kafka.recsys.selection",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
-                kafka_host: config.kafka.host,
-                topic: "STORE_RECSYS_SELECTION",
-                group_id: config.kafka.groupId,
-                high_water: 10,
-                low_water: 1,
-                from_offset: "latest"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "STORE_RECSYS_SELECTION",
+                    groupId: config.kafka.groupId,
+                    high_water: 10,
+                    low_water: 2
+                }
             }
         }
     ],
@@ -26,7 +27,7 @@ module.exports = {
         {
             name: "store.pg.recsys.selection",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "store-pg-recsys-selections.js",
             inputs: [
                 {

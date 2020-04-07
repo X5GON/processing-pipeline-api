@@ -25,9 +25,6 @@ one of the developers contributing to this project.
 ######################################
 # Platform
 
-# platform session secret
-PROD_PLATFORM_SESSION_SECRET=platform-session-key
-
 # postgres database password
 PROD_PG_PASSWORD=postgres-password
 
@@ -39,12 +36,11 @@ PROD_PG_VERSION=postgres-database-version(optional)
 PROD_KAFKA_HOST=kafka-host-ip(optional)
 PROD_KAFKA_GROUP=kafka-group(optional)
 
+PROD_ELASTICSEARCH_NODE=http://127.0.0.1:9200
+
 #######################################
 ### Development variables
 #######################################
-
-# platform session secret
-DEV_PLATFORM_SESSION_SECRET=platform-session-key
 
 # postgres database password
 DEV_PG_PASSWORD=postgres-password
@@ -57,12 +53,11 @@ DEV_PG_VERSION=postgres-database-version(optional)
 DEV_KAFKA_HOST=kafka-host-ip(optional)
 DEV_KAFKA_GROUP=kafka-group(optional)
 
+DEV_ELASTICSEARCH_NODE=http://127.0.0.1:9200
+
 #######################################
 ### Test variables
 #######################################
-
-# platform session secret
-TEST_PLATFORM_SESSION_SECRET=platform-session-key
 
 # postgres database password
 TEST_PG_PASSWORD=postgres-password
@@ -75,13 +70,11 @@ TEST_PG_VERSION=postgres-database-version(optional)
 TEST_KAFKA_HOST=kafka-host-ip(optional)
 TEST_KAFKA_GROUP=kafka-group(optional)
 
+TEST_ELASTICSEARCH_NODE=http://127.0.0.1:9200
+
 ######################################
 # Common variables
 ######################################
-
-# Google Recaptcha
-GOOGLE_RECAPTCHA_SITEKEY=platform-google-recaptcha-sitekey
-GOOGLE_RECAPTCHA_SECRET=platform-google-recaptcha-secret
 
 # videolectures api key - for data retrieval
 RETRIEVERS_VL_APIKEY=videolectures-apikey
@@ -93,6 +86,9 @@ PREPROC_WIKIFIER_USERKEY=wikifier-userkey
 # UPV MLLP-TTP
 PREPROC_TTP_USER=ttp-user
 PREPROC_TTP_TOKEN=ttp-token
+
+# retriever tokens
+TOKEN_VIDEOLECTURES=videolectures-token
 
 ```
 

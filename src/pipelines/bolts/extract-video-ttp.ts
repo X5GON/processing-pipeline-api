@@ -105,7 +105,9 @@ class ExtractVideoTTP extends BasicBolt {
 
     async shutdown() {
         // prepare for gracefull shutdown, e.g. save state
-        this._delayObject.clear();
+        if (this._delayObject) {
+            this._delayObject.clear();
+        }
     }
 
 

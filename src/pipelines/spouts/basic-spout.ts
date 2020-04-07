@@ -1,7 +1,4 @@
 
-
-import * as qtopology from "qtopology";
-
 export default class BasicSpout {
 
     protected _name: string;
@@ -14,18 +11,16 @@ export default class BasicSpout {
         this._prefix = "";
     }
 
-    init(name: string, config: any, context: any, callback: qtopology.SimpleCallback) {
+    async init(name: string, config: any, context: any) {
         // create something if needed
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: qtopology.SimpleCallback) {
+    async shutdown() {
         // prepare the graceful shutdown, e.g. save state
-        callback();
     }
 
     run() {
@@ -36,8 +31,7 @@ export default class BasicSpout {
         // do something if needed
     }
 
-    next(callback: qtopology.SimpleCallback) {
+    async next() {
         // do something
-        callback();
     }
 }

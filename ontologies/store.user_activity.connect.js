@@ -1,5 +1,5 @@
 // configurations
-const config = require("@config/config");
+const { default: config } = require("../dist/config/config");
 
 module.exports = {
     general: {
@@ -10,21 +10,22 @@ module.exports = {
         {
             name: "kafka.user-activities.visits",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
-                kafka_host: config.kafka.host,
-                topic: "STORE_USERACTIVITY_VISIT",
-                group_id: config.kafka.groupId,
-                high_water: 10,
-                low_water: 1,
-                from_offset: "latest"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "STORE_USERACTIVITY_VISIT",
+                    groupId: config.kafka.groupId,
+                    high_water: 10,
+                    low_water: 1
+                }
             }
         },
         {
             name: "kafka.user-activities.video",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka_host: config.kafka.host,
@@ -43,7 +44,7 @@ module.exports = {
         {
             name: "store.pg.user-activity.visits",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "store-pg-user-activity-visits.js",
             inputs: [
                 {
@@ -61,7 +62,7 @@ module.exports = {
         {
             name: "log.user-activity.connect",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "message_logging.js",
             inputs: [
                 {

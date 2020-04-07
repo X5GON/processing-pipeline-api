@@ -85,7 +85,7 @@ class PostgresqlSpout extends BasicSpout {
         this._generator = null;
     }
 
-    init(name: string, config: any, context: any, callback: qtopology.SimpleCallback) {
+    async init(name: string, config: any, context: any) {
         this._name = name;
         this._context = context;
         this._prefix = `[PostgresqlSpout ${this._name}]`;
@@ -94,16 +94,20 @@ class PostgresqlSpout extends BasicSpout {
             config.sql_statement,
             config.time_interval
         );
-        callback();
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: qtopology.SimpleCallback) {
+    async shutdown() {
         // stop postgresql generator
-        this._generator.stop(callback);
+        const promise = new Promise((resolve, reject) => {
+            this._generator.stop(() => {
+                return resolve();
+            });
+        });
+        await promise;
     }
 
     run() {
@@ -116,16 +120,13 @@ class PostgresqlSpout extends BasicSpout {
         this._generator.disable();
     }
 
-    next(callback: qtopology.SpoutNextCallback) {
+    async next() {
         // get the next message from the generator
-        const message = this._generator.next();
-        callback(null, message, null);
+        return this._generator.next();
     }
 }
 
-
-const create = () => {
-    return new PostgresqlSpout();
-}
+// create a new instance of the spout
+const create = () => new PostgresqlSpout();
 
 export { create };

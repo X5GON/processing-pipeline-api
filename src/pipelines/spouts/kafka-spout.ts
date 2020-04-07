@@ -5,9 +5,6 @@
  * component in the topology.
  */
 
-// interfaces
-import * as qtopology from "qtopology";
-
 // modules
 import BasicSpout from "./basic-spout";
 import KafkaConsumer from "../../library/kafka-consumer";
@@ -25,27 +22,25 @@ class KafkaSpout extends BasicSpout {
         this._generator = null;
     }
 
-    init(name: string, config: any, context: any, callback: qtopology.SimpleCallback) {
+    async init(name: string, config: any, context: any) {
         this._name = name;
         this._context = context;
         this._prefix = `[KafkaSpout ${this._name}]`;
-        this._generator = new KafkaConsumer({
-            host: config.kafka_host,
-            topic: config.topic,
-            groupId: config.group_id,
-            high_water: config.high_water,
-            low_water: config.low_water
-        });
-        callback();
+        this._generator = new KafkaConsumer(config.kafka);
     }
 
     heartbeat() {
         // do something if needed
     }
 
-    shutdown(callback: qtopology.SimpleCallback) {
+    async shutdown() {
         // stop kafka generator
-        this._generator.stop(callback);
+        const promise = new Promise((resolve, reject) => {
+            this._generator.stop(() => {
+                return resolve();
+            });
+        });
+        await promise;
     }
 
     run() {
@@ -58,15 +53,13 @@ class KafkaSpout extends BasicSpout {
         this._generator.disable();
     }
 
-    next(callback: qtopology.SpoutNextCallback) {
+    async next() {
         // get the next message from the generator
-        const message = this._generator.next();
-        callback(null, message, null);
+        return this._generator.next();
     }
 }
 
-const create = () => {
-    return new KafkaSpout();
-}
+// create a new instance of the spout
+const create = () => new KafkaSpout();
 
 export { create };

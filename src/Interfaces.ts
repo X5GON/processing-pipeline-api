@@ -283,7 +283,7 @@ export interface IExtractTextTTPConfig {
         }
         timeout_millis: number;
     }
-    tmemporary_folder: string;
+    temporary_folder: string;
     document_language_path: string;
     document_title_path: string;
     document_text_path: string;
@@ -305,7 +305,6 @@ export interface IExtractVideoTTPConfig {
         }
         timeout_millis: number;
     }
-    tmemporary_folder: string;
     document_language_path: string;
     document_location_path: string;
     document_authors_path: string;

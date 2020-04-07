@@ -79,7 +79,7 @@ class ExtractTextTTP extends BasicBolt {
         // the default timeout when checking status
         this._ttpTimeoutMillis = config.ttp.timeout_millis || 2 * 60 * 1000;
         // create the temporary folder
-        this._temporaryFolder = config.tmemporary_folder;
+        this._temporaryFolder = config.temporary_folder;
         fileManager.createDirectoryPath(this._temporaryFolder);
 
         // the path to where to get the language
@@ -107,8 +107,10 @@ class ExtractTextTTP extends BasicBolt {
     }
 
     async shutdown() {
-        // prepare for gracefull shutdown, e.g. save state
-        this._delayObject.clear();
+        // prepare for graceful shutdown, e.g. save state
+        if (this._delayObject) {
+            this._delayObject.clear();
+        }
     }
 
 

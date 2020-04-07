@@ -1,7 +1,7 @@
 // global configuration
-const config = require("@config/config");
+const { default: config } = require("../dist/config/config");
 
-const formatMessages = require("../utils/format-materials");
+const formatMessages = require("../dist/pipelines/utils/format-materials");
 
 const productionMode = config.isProduction;
 
@@ -15,15 +15,16 @@ module.exports = {
         {
             name: "input.kafka.text",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
-                kafka_host: config.kafka.host,
-                topic: "PREPROC_MATERIAL_TEXT_TRANSLATION",
-                group_id: config.kafka.groupId,
-                high_water: 10,
-                low_water: 0,
-                from_offset: "latest"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "PREPROC_MATERIAL_TEXT_FREEMIUM",
+                    groupId: config.kafka.groupId,
+                    high_water: 10,
+                    low_water: 0
+                }
             }
         }
     ],
@@ -34,7 +35,7 @@ module.exports = {
                 {
                     name: "log.material.process.started",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -51,7 +52,7 @@ module.exports = {
                             start_process_time: true
                         },
                         postgres_literal_attrs: {
-                            status: "[TEXT] material processing started: 0/5 steps completed. Transforming format"
+                            status: "[TEXT] material processing started: 0/4 steps completed. Transforming format"
                         },
                         document_error_path: "message"
                     }
@@ -99,7 +100,7 @@ module.exports = {
                 {
                     name: "log.material.process.formatting",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -113,8 +114,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status:
-                  "[TEXT] material object schema transformed: 1/5 steps completed. Extracting raw material content"
+                            status: "[TEXT] material object schema transformed: 1/4 steps completed. Extracting raw material content"
                         },
                         document_error_path: "message"
                     }
@@ -125,7 +125,7 @@ module.exports = {
         {
             name: "extract.text.raw",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "extract-text-raw.js",
             inputs: [
                 {
@@ -153,7 +153,7 @@ module.exports = {
                 {
                     name: "log.material.process.extract.text.raw",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -167,62 +167,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status: "[TEXT] material content extracted: 2/5 steps completed. Retrieving translations"
-                        },
-                        document_error_path: "message"
-                    }
-                }
-            ]
-            : []),
-
-        {
-            name: "extract.text.ttp",
-            type: "inproc",
-            working_dir: "./bolts",
-            cmd: "extract-text-ttp.js",
-            inputs: [
-                {
-                    source: productionMode
-                        ? "log.material.process.extract.text.raw"
-                        : "extract.text.raw"
-                }
-            ],
-            init: {
-                ttp: {
-                    user: config.preproc.ttp.user,
-                    token: config.preproc.ttp.token
-                },
-                tmp_folder: "./tmp",
-                document_title_path: "title",
-                document_language_path: "language",
-                document_text_path: "material_metadata.raw_text",
-                document_transcriptions_path: "material_metadata.transcriptions",
-                document_error_path: "message",
-                ttp_id_path: "material_metadata.ttp_id"
-            }
-        },
-
-        // LOGGING STATE OF MATERIAL PROCESS
-        ...(productionMode
-            ? [
-                {
-                    name: "log.material.process.extract.text.ttp",
-                    type: "inproc",
-                    working_dir: "./bolts",
-                    cmd: "message-postgresql.js",
-                    inputs: [
-                        {
-                            source: "extract.text.ttp"
-                        }
-                    ],
-                    init: {
-                        pg: config.pg,
-                        postgres_table: "material_process_queue",
-                        postgres_primary_id: "material_url",
-                        message_primary_id: "material_url",
-                        postgres_method: "update",
-                        postgres_literal_attrs: {
-                            status: "[TEXT] material translations retrieved: 3/5 steps completed. Retrieving wikipedia concepts"
+                            status: "[TEXT] material content extracted: 2/4 steps completed. Retrieving translations"
                         },
                         document_error_path: "message"
                     }
@@ -233,20 +178,20 @@ module.exports = {
         {
             name: "extract.wikipedia",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "extract-wikipedia.js",
             inputs: [
                 {
                     source: productionMode
-                        ? "log.material.process.extract.text.ttp"
-                        : "extract.text.ttp"
+                        ? "log.material.process.extract.text.raw"
+                        : "extract.text.raw"
                 }
             ],
             init: {
                 wikifier: {
-                    user_key: config.preproc.wikifier.userKey,
-                    wikifier_url: config.preproc.wikifier.wikifierURL,
-                    max_length: 10000
+                    user_key: config.wikifier.userKey,
+                    wikifier_url: config.wikifier.wikifierURL,
+                    max_length: 20000
                 },
                 document_text_path: "material_metadata.raw_text",
                 wikipedia_concept_path: "material_metadata.wikipedia_concepts",
@@ -260,7 +205,7 @@ module.exports = {
                 {
                     name: "log.material.process.extract.wikipedia",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -274,7 +219,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status: "[TEXT] material wikified: 4/5 steps completed. Validating material"
+                            status: "[TEXT] material wikified: 3/4 steps completed. Validating material"
                         },
                         document_error_path: "message"
                     }
@@ -285,7 +230,7 @@ module.exports = {
         {
             name: "message.validate",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "message-validate.js",
             inputs: [
                 {
@@ -295,7 +240,7 @@ module.exports = {
                 }
             ],
             init: {
-                json_schema: require("../../../schemas/material"),
+                json_schema: require("../schemas/material"),
                 document_error_path: "message"
             }
         },
@@ -306,7 +251,7 @@ module.exports = {
                 {
                     name: "log.material.process.message.validate",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -320,7 +265,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status: "[TEXT] material validated: 5/5 steps completed. Storing the material"
+                            status: "[TEXT] material validated: 4/4 steps completed. Storing the material"
                         },
                         document_error_path: "message"
                     }
@@ -336,7 +281,7 @@ module.exports = {
         {
             name: "kafka.material.complete",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "kafka-material-complete.js",
             inputs: [
                 {
@@ -450,7 +395,7 @@ module.exports = {
                 {
                     name: "log.material.process.error",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -476,7 +421,7 @@ module.exports = {
         {
             name: "kafka.material.partial",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "kafka-material-partial.js",
             inputs: [
                 {

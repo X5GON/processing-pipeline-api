@@ -1,5 +1,5 @@
 // configurations
-const config = require("@config/config");
+const { default: config } = require("../dist/config/config");
 
 const productionMode = config.isProduction;
 
@@ -12,15 +12,16 @@ module.exports = {
         {
             name: "kafka.material.update",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
-                kafka_host: config.kafka.host,
-                topic: "UPDATE_MATERIAL_CONTENT",
-                group_id: config.kafka.groupId,
-                high_water: 10,
-                low_water: 2,
-                from_offset: "earliest"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "UPDATE_MATERIAL_CONTENT",
+                    groupId: config.kafka.groupId,
+                    high_water: 10,
+                    low_water: 2
+                }
             }
         }
     ],
@@ -32,7 +33,7 @@ module.exports = {
         {
             name: "store.pg.material.update",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "store-pg-material-update.js",
             inputs: [
                 {
@@ -50,7 +51,7 @@ module.exports = {
                 {
                     name: "log.material.process.update.stored",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -77,7 +78,7 @@ module.exports = {
         {
             name: "store.pg.material.elasticsearch",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "es-material-update.js",
             inputs: [
                 {
@@ -98,7 +99,7 @@ module.exports = {
                 {
                     name: "log.material.process.update.finished",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {

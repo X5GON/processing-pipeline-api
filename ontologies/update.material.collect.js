@@ -1,5 +1,5 @@
 // global configuration
-const config = require("@config/config");
+const { default: config } = require("../dist/config/config");
 
 const productionMode = config.isProduction;
 
@@ -13,7 +13,7 @@ module.exports = {
         {
             name: "input.postgres.materials",
             type: "inproc",
-            working_dir: "./spouts",
+            working_dir: "./pipelines/spouts",
             cmd: "postgres-spout.js",
             init: {
                 pg: config.pg,
@@ -83,7 +83,7 @@ module.exports = {
                 {
                     name: "log.material.process.started",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -143,7 +143,7 @@ module.exports = {
         {
             name: "update.material.redirect",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "message-redirect.js",
             inputs: [{ source: "update.material.transform" }],
             init: {}
@@ -155,7 +155,7 @@ module.exports = {
                 {
                     name: "log.material.process.finished",
                     type: "inproc",
-                    working_dir: "./bolts",
+                    working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -185,7 +185,7 @@ module.exports = {
         {
             name: "kafka.material.update.text",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -203,7 +203,7 @@ module.exports = {
         {
             name: "kafka.material.update.video",
             type: "inproc",
-            working_dir: "./bolts",
+            working_dir: "./pipelines/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
