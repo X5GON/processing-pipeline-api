@@ -113,7 +113,6 @@ class ExtractTextTTP extends BasicBolt {
         }
     }
 
-
     async receive(message: any, stream_id: string) {
         // iteratively check for the process status
         const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (process_id: string) => {
@@ -152,7 +151,6 @@ class ExtractTextTTP extends BasicBolt {
                 }
             }
         }
-
 
         // //////////////////////////////////////////////////////////
         // Start Processing materials

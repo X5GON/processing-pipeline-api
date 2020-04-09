@@ -65,8 +65,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status:
-                  "[STORE] material stored inside the database. Updating the search index"
+                            status: "[STORE] material stored inside the database. Updating the search index"
                         },
                         document_error_path: "message"
                     }

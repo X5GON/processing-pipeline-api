@@ -77,7 +77,7 @@ class MaterialCollector {
         }
 
         // initialize the retriever given by the config file
-        const retriever = new (require(`./retrievers/${settings.script}`))(settings.config);
+        const retriever = new (require(`./retrievers/${settings.script}`).default)(settings.config);
         // add retriever to the list
         this._apis.push({
             name: settings.name,

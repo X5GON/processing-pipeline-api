@@ -77,6 +77,7 @@ class StoreRecsysTransitions extends BasicBolt {
             await this._pg.insert(rec_sys_user_transitions, "rec_sys_user_transitions");
         } catch (error) {
             // error handling
+            return;
         }
     }
 }

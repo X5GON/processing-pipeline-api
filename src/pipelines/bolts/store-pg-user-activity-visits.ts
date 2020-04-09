@@ -107,8 +107,11 @@ class StoreUserActivities extends BasicBolt {
                 };
                 await updateUserModel(activity);
             }
+            // send the message to the next message
+            return await this._onEmit(message, stream_id);
         } catch (error) {
             // error handler
+            return;
         }
     }
 }

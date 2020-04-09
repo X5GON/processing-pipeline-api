@@ -57,6 +57,7 @@ class StoreMaterialPartial extends BasicBolt {
             return await this._onEmit(message, stream_id);
         } catch (error) {
             // error handling
+            return;
         }
     }
 }

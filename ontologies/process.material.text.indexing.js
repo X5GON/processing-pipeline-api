@@ -282,7 +282,7 @@ module.exports = {
             name: "kafka.material.complete",
             type: "inproc",
             working_dir: "./pipelines/bolts",
-            cmd: "kafka-material-complete.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: productionMode
@@ -422,7 +422,7 @@ module.exports = {
             name: "kafka.material.partial",
             type: "inproc",
             working_dir: "./pipelines/bolts",
-            cmd: "kafka-material-partial.js",
+            cmd: "message-forward-kafka.js",
             inputs: [
                 {
                     source: productionMode

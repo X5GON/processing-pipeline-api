@@ -115,8 +115,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status:
-                  "[VIDEO] material object schema transformed: 1/4 steps completed. Retrieving transcriptions and translations"
+                            status: "[VIDEO] material object schema transformed: 1/4 steps completed. Retrieving transcriptions and translations"
                         },
                         document_error_path: "message"
                     }
@@ -171,8 +170,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status:
-                  "[VIDEO] material transcriptions and translations retrieved: 2/4 steps completed. Retrieving wikipedia concepts"
+                            status: "[VIDEO] material transcriptions and translations retrieved: 2/4 steps completed. Retrieving wikipedia concepts"
                         },
                         document_error_path: "message"
                     }

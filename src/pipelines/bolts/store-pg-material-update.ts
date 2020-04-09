@@ -152,6 +152,7 @@ class StoreMaterialUpdate extends BasicBolt {
 
         } catch (error) {
             // error handling
+            return;
         }
     }
 }

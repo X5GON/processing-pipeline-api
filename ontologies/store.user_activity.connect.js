@@ -63,7 +63,7 @@ module.exports = {
             name: "log.user-activity.connect",
             type: "inproc",
             working_dir: "./pipelines/bolts",
-            cmd: "message_logging.js",
+            cmd: "message-logging.js",
             inputs: [
                 {
                     source: "kafka.user-activities.visits"
@@ -73,11 +73,14 @@ module.exports = {
                 }
             ],
             init: {
-                file_name: "user-activities",
-                level: "info",
-                sub_folder: "user-activities",
-                archive: true,
-                message_type: "user_activity"
+                logging: {
+                    file_name: "user-activities",
+                    level: "info",
+                    sub_folder: "user-activities",
+                    archive: true,
+                    message_type: "user_activity"
+                },
+                final_bolt: true
             }
         }
     ],

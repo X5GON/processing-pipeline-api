@@ -114,8 +114,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status:
-                  "[TEXT] material object schema transformed: 1/5 steps completed. Extracting raw material content"
+                            status: "[TEXT] material object schema transformed: 1/5 steps completed. Extracting raw material content"
                         },
                         document_error_path: "message"
                     }
@@ -193,7 +192,7 @@ module.exports = {
                     user: config.ttp.user,
                     token: config.ttp.token
                 },
-                temporary_folder: "../tmp",
+                temporary_folder: "../../tmp",
                 document_title_path: "title",
                 document_language_path: "language",
                 document_text_path: "material_metadata.raw_text",

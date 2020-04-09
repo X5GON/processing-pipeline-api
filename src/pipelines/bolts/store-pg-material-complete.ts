@@ -130,6 +130,7 @@ class StoreMaterialComplete extends BasicBolt {
             return this._onEmit(message, stream_id);
         } catch (error) {
             // error handling
+            return;
         }
     }
 }

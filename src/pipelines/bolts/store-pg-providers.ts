@@ -53,6 +53,7 @@ class StoreProviders extends BasicBolt {
             await this._pg.upsert({ name, domain, contact, token }, { token: null }, "providers");
         } catch (error) {
             // error handling
+            return;
         }
     }
 }

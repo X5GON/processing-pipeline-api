@@ -249,7 +249,6 @@ class ExtractVideoTTP extends BasicBolt {
         const languages = Object.keys(requestedLanguages);
         const formats = Object.keys(this._ttpFormats);
 
-
         let response: Interfaces.ITTPIngestNewResponse;
         try {
             response = await this._postRequest("/ingest/new", options, {

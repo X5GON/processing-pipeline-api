@@ -168,8 +168,7 @@ class ElastisearchNew extends BasicBolt {
         await this._es.refreshIndex("oer_materials");
 
         // continue with the last patching
-        if (this._finalBolt) { return; }
-        return await this._onEmit(message, stream_id);
+        return this._finalBolt ? null : await this._onEmit(message, stream_id);
     }
 }
 

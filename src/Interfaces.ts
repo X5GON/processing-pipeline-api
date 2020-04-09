@@ -1,3 +1,4 @@
+import * as jsonschema from "jsonschema";
 
 export interface IGenericJSON { [key: string]: any; }
 export type IGenericExecFunc = (value?: any) => any;
@@ -26,7 +27,6 @@ export interface IProcessMaterial {
     },
     license: string;
 }
-
 
 /////////////////////////////////////////////////////////////////////
 // Configuration Interfaces
@@ -139,8 +139,6 @@ export type IPostgreSQLBatchCallbackFunc = (error: Error, rows: any[], callback:
 /////////////////////////////////////////////////////////////////////
 // JSON Validator Interfaces
 /////////////////////////////////////////////////////////////////////
-
-import * as jsonschema from "jsonschema";
 
 export interface IValidatorSchemas {
     [key:string]: jsonschema.Schema;
@@ -292,7 +290,6 @@ export interface IExtractTextTTPConfig {
     ttp_id_path: string;
 }
 
-
 export interface IExtractVideoTTPConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     ttp: {
@@ -378,7 +375,6 @@ export interface IMessageForwardKafka {
     }
     format_message?: IFormatMessage
 }
-
 
 ///////////////////////////////////////
 // Message Logging
