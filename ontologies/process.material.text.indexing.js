@@ -20,7 +20,7 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "PREPROC_MATERIAL_TEXT_FREEMIUM",
+                    topic: "PREPROC_MATERIAL_TEXT_INDEXING",
                     groupId: config.kafka.groupId,
                     high_water: 10,
                     low_water: 0
