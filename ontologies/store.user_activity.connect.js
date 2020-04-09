@@ -28,12 +28,13 @@ module.exports = {
             working_dir: "./pipelines/spouts",
             cmd: "kafka-spout.js",
             init: {
-                kafka_host: config.kafka.host,
-                topic: "STORE_USERACTIVITY_VIDEO",
-                group_id: config.kafka.groupId,
-                high_water: 10,
-                low_water: 1,
-                from_offset: "latest"
+                kafka: {
+                    host: config.kafka.host,
+                    topic: "STORE_USERACTIVITY_VIDEO",
+                    groupId: config.kafka.groupId,
+                    high_water: 10,
+                    low_water: 1
+                }
             }
         }
     ],
