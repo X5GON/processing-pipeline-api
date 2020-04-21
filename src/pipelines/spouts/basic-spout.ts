@@ -31,7 +31,10 @@ export default class BasicSpout {
         // do something if needed
     }
 
-    async next() {
+    async next(): Promise<{ data: any }> {
         // do something
+        return new Promise((resolve, reject) => {
+            resolve({ data: null });
+        })
     }
 }
