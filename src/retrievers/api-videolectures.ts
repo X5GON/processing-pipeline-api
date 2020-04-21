@@ -80,6 +80,18 @@ export default class VideolecturesAPI extends RestBasic {
         return oerList.filter((material) => material);
     }
 
+    start() {
+        // mandatory placeholder
+    }
+
+    stop() {
+        // mandatory placeholder
+    }
+
+    update() {
+        // mandatory placeholder
+    }
+
     // /////////////////////////////////////////////////////
     // Helper Functions
     // /////////////////////////////////////////////////////
