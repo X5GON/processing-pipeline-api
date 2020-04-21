@@ -45,7 +45,7 @@ class MessageLogging extends BasicBolt {
 
         this._logger_message_type = message_type;
         // initialize the logger
-        this._logger = Logger.createInstance(file_name, level, sub_folder, archive);
+        this._logger = Logger.createInstance(file_name, level, sub_folder, false, archive);
         // if this is the final bolt in the pipeline
         this._finalBolt = final_bolt;
     }
