@@ -20,7 +20,7 @@ import PostgreSQL from "./library/postgresQL";
 import Logger from "./library/logger";
 
 // create a logger for platform requests
-const logger = Logger.createGroupInstance("material-collector", "preproc", config.isProduction);
+const logger = Logger.createGroupInstance("material-collector", "preproc", !config.isProduction, config.isProduction);
 
 
 class MaterialCollector {
