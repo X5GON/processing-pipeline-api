@@ -116,13 +116,9 @@ class ExtractTextTTP extends BasicBolt {
     async receive(message: any, stream_id: string) {
         // iteratively check for the process status
         const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (process_id: string) => {
-            console.log("delay object");
             this._delayObject = delay(this._ttpTimeoutMillis);
-
-            console.log("waiting");
             // wait for a number of milliseconds
             await this._delayObject;
-            console.log("continue processing");
             try {
                 const {
                     status_code,
@@ -266,7 +262,6 @@ class ExtractTextTTP extends BasicBolt {
                 json: true
             })
         } catch (error) {
-            console.log("Error on /ingest/new");
             // after the request remove the zip files
             fileManager.removeFolder(rootPath);
             // log error message and store the not completed material
@@ -280,7 +275,6 @@ class ExtractTextTTP extends BasicBolt {
         fileManager.removeFolder(rootPath);
 
         if (rcode !== 0) {
-            console.log("Error on /ingest/new, 'rcode'");
             // something went wrong with the upload, terminate process
             const errorMessage = `${this._prefix} [status_code: ${rcode}] Error when uploading process_id=${id}`;
             // log error message and store the not completed material
@@ -301,7 +295,6 @@ class ExtractTextTTP extends BasicBolt {
             } = await _checkTTPStatus(id);
 
             if (!process_completed) {
-                console.log("Error on /status");
                 // something went wrong with the upload, terminate process
                 const errorMessage = `${this._prefix} [status_code: ${status_code}] Error when uploading process_id=${process_id}: ${status_info}`;
                 // log error message and store the not completed material
@@ -368,7 +361,6 @@ class ExtractTextTTP extends BasicBolt {
             this.set(message, this._ttpIDPath, external_id);
             return await this._onEmit(message, stream_id);
         } catch (error) {
-            console.log("Error on /get");
             // something went wrong with the upload, terminate process
             const errorMessage = `${this._prefix} ${error.message}`;
             // log error message and store the not completed material
