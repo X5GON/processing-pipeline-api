@@ -20,7 +20,7 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "PREPROC_MATERIAL_VIDEO",
+                    topic: "PREPROC_MATERIAL_VIDEO_TRANSLATION",
                     groupId: config.kafka.groupId,
                     high_water: 10,
                     low_water: 0

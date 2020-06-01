@@ -12,6 +12,8 @@ import * as Interfaces from "../../Interfaces";
 import * as bent from "bent";
 import * as delay from "delay";
 import { normalizeString } from "../../library/normalization";
+import * as querystring from "querystring";
+
 import BasicBolt from "./basic-bolt";
 
 
@@ -31,7 +33,8 @@ class ExtractVideoTTP extends BasicBolt {
     private _ttpIDPath: string;
     private _documentErrorPath: string;
     private _postRequest: bent.RequestFunction<any>;
-    private _getRequest: bent.RequestFunction<any>;
+    private _getStatusRequest: bent.RequestFunction<any>;
+    private _getContentRequest: bent.RequestFunction<any>;
     private _delayObject: delay.ClearablePromise<void>;
 
     constructor() {
@@ -94,7 +97,8 @@ class ExtractVideoTTP extends BasicBolt {
         // the path to where to store the error
         this._documentErrorPath = config.document_error_path || "error";
 
-        this._getRequest = bent("GET", 200, this._ttpURL, "json");
+        this._getStatusRequest = bent("GET", 200, this._ttpURL, "json");
+        this._getContentRequest = bent("GET", 200, this._ttpURL, "string");
         this._postRequest = bent("POST", 200, this._ttpURL, "json");
 
     }
@@ -121,7 +125,7 @@ class ExtractVideoTTP extends BasicBolt {
                 const {
                     status_code,
                     status_info
-                }: Interfaces.IExtractTTPStatus = await this._getRequest("/status", { ...this._ttpOptions, id: process_id });
+                }: Interfaces.IExtractTTPStatus = await this._getStatusRequest(`/status?${querystring.stringify({ ...this._ttpOptions, id: process_id })}`);
                 if (status_code === 6) {
                     return {
                         process_completed: true,
@@ -302,12 +306,12 @@ class ExtractVideoTTP extends BasicBolt {
                 // iterate through all formats
                 for (const format of formats) {
                     // prepare the requests to get the transcriptions and translations
-                    const request = this._getRequest("/get", {
+                    const request = this._getContentRequest(`/get?${querystring.stringify({
                         ...this._ttpOptions,
                         id: external_id,
                         format,
                         lang
-                    });
+                    })}`);
                     // store it for later
                     languageRequests.push(request);
                 }
@@ -329,15 +333,9 @@ class ExtractVideoTTP extends BasicBolt {
                 for (let formatId = 0; formatId < formats.length; formatId++) {
                     const format = this._ttpFormats[formats[formatId]];
                     const index = langId * formats.length + formatId;
-                    try {
-                        // if the response can be parsed, it contains the error object
-                        // otherwise, it is the string containing the transcriptions
-                        JSON.parse(translations[index]);
-                    } catch (err) {
-                        // if here, the response is a text file, dfxp or plain
-                        if (typeof translations[index] === "string") {
-                            transcription[format] = translations[index];
-                        }
+                    // if here, the response is a text file, dfxp or plain
+                    if (typeof translations[index] === "string") {
+                        transcription[format] = translations[index];
                     }
                 }
                 if (Object.keys(transcription)) {

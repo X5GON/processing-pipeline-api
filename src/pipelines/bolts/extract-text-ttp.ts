@@ -15,9 +15,10 @@ import * as archiver from "archiver";
 import * as crypto from "crypto";
 import * as bent from "bent";
 import * as delay from "delay";
-
+import * as rp from "request-promise-native";
 import * as fileManager from "../../library/file-manager";
 import { normalizeString } from "../../library/normalization";
+import * as querystring from "querystring";
 
 import BasicBolt from "./basic-bolt";
 
@@ -36,8 +37,8 @@ class ExtractTextTTP extends BasicBolt {
     private _documentTranscriptionsPath: string;
     private _ttpIDPath: string;
     private _documentErrorPath: string;
-    private _postRequest: bent.RequestFunction<any>;
-    private _getRequest: bent.RequestFunction<any>;
+    private _getStatusRequest: bent.RequestFunction<any>;
+    private _getContentRequest: bent.RequestFunction<any>;
     private _delayObject: delay.ClearablePromise<void>;
 
     constructor() {
@@ -97,9 +98,8 @@ class ExtractTextTTP extends BasicBolt {
         // the path to where to store the error
         this._documentErrorPath = config.document_error_path || "error";
 
-        this._getRequest = bent("GET", 200, this._ttpURL, "json");
-        this._postRequest = bent("POST", 200, this._ttpURL, "json");
-
+        this._getStatusRequest = bent("GET", 200, this._ttpURL, "json");
+        this._getContentRequest = bent("GET", 200, this._ttpURL, "string");
     }
 
     heartbeat() {
@@ -116,14 +116,18 @@ class ExtractTextTTP extends BasicBolt {
     async receive(message: any, stream_id: string) {
         // iteratively check for the process status
         const _checkTTPStatus: Interfaces.IExtractTTPStatusFunc = async (process_id: string) => {
+            console.log("delay object");
             this._delayObject = delay(this._ttpTimeoutMillis);
+
+            console.log("waiting");
             // wait for a number of milliseconds
             await this._delayObject;
+            console.log("continue processing");
             try {
                 const {
                     status_code,
                     status_info
-                } = await this._getRequest("/status", { ...this._ttpOptions, id: process_id });
+                } = await this._getStatusRequest(`/status?${querystring.stringify({ ...this._ttpOptions, id: process_id })}`);
                 if (status_code === 3) {
                     return {
                         process_completed: true,
@@ -145,7 +149,7 @@ class ExtractTextTTP extends BasicBolt {
             } catch (error) {
                 return {
                     process_completed: false,
-                    status_info: `${this._prefix} ${error.message}`,
+                    status_info: error.message,
                     process_id,
                     status_code: 900
                 }
@@ -249,17 +253,20 @@ class ExtractTextTTP extends BasicBolt {
         archive.pipe(documentPackage);
         archive.file(txtPath, { name: "material.txt" });
 
-
         let response: Interfaces.ITTPIngestNewResponse;
         try {
             await archive.finalize();
-            response = await this._postRequest("/ingest/new", {
-                json: fs.createReadStream(jsonPath),
-                pkg: fs.createReadStream(documentPackagePath)
-            }, {
-                "content-type": "multipart/form-data"
+            response = await rp({
+                method: "POST",
+                uri: `${this._ttpURL}/ingest/new`,
+                formData: {
+                    json: fs.createReadStream(jsonPath),
+                    pkg: fs.createReadStream(documentPackagePath)
+                },
+                json: true
             })
         } catch (error) {
+            console.log("Error on /ingest/new");
             // after the request remove the zip files
             fileManager.removeFolder(rootPath);
             // log error message and store the not completed material
@@ -273,6 +280,7 @@ class ExtractTextTTP extends BasicBolt {
         fileManager.removeFolder(rootPath);
 
         if (rcode !== 0) {
+            console.log("Error on /ingest/new, 'rcode'");
             // something went wrong with the upload, terminate process
             const errorMessage = `${this._prefix} [status_code: ${rcode}] Error when uploading process_id=${id}`;
             // log error message and store the not completed material
@@ -293,6 +301,7 @@ class ExtractTextTTP extends BasicBolt {
             } = await _checkTTPStatus(id);
 
             if (!process_completed) {
+                console.log("Error on /status");
                 // something went wrong with the upload, terminate process
                 const errorMessage = `${this._prefix} [status_code: ${status_code}] Error when uploading process_id=${process_id}: ${status_info}`;
                 // log error message and store the not completed material
@@ -311,12 +320,12 @@ class ExtractTextTTP extends BasicBolt {
                 // iterate through all formats
                 for (const format of formats) {
                     // prepare the requests to get the transcriptions and translations
-                    const request = this._getRequest("/get", {
+                    const request = this._getContentRequest(`/get?${querystring.stringify({
                         ...this._ttpOptions,
                         id: external_id,
                         format,
                         lang
-                    });
+                    })}`);
                     // store it for later
                     languageRequests.push(request);
                 }
@@ -326,7 +335,7 @@ class ExtractTextTTP extends BasicBolt {
             const translations = await Promise.all(languageRequests);
 
             // prepare placeholders for material metadata
-            const transcriptions = { };
+            const transcriptions: { [key: string]: any } = { };
 
             // iterate through all responses
             for (let langId = 0; langId < languages.length; langId++) {
@@ -337,15 +346,9 @@ class ExtractTextTTP extends BasicBolt {
                 for (let formatId = 0; formatId < formats.length; formatId++) {
                     const format = this._ttpFormats[formats[formatId]];
                     const index = langId * formats.length + formatId;
-                    try {
-                        // if the response can be parsed, it contains the error object
-                        // otherwise, it is the string containing the transcriptions
-                        JSON.parse(translations[index]);
-                    } catch (err) {
-                        // the response is a text file: dfxp, webvtt or plain
-                        if (typeof translations[index] === "string") {
-                            transcription[format] = translations[index];
-                        }
+                    // the response is a text file: dfxp, webvtt or plain
+                    if (typeof translations[index] === "string") {
+                        transcription[format] = translations[index];
                     }
                 }
                 // possible that the transcription object does not contain any data
@@ -365,6 +368,7 @@ class ExtractTextTTP extends BasicBolt {
             this.set(message, this._ttpIDPath, external_id);
             return await this._onEmit(message, stream_id);
         } catch (error) {
+            console.log("Error on /get");
             // something went wrong with the upload, terminate process
             const errorMessage = `${this._prefix} ${error.message}`;
             // log error message and store the not completed material
