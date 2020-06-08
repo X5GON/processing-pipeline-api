@@ -43,9 +43,11 @@ class MessageRedirect extends BasicBolt {
         } else if (mimetypes.video.includes(mimetype)) {
             stream_id = "video";
         } else if (mimetypes.audio.includes(mimetype)) {
-            stream_id = "video";
+            stream_id = "audio";
         } else if (mimetypes.text.includes(mimetype)) {
             stream_id = "text";
+        } else {
+            stream_id = "unknown";
         }
 
         // redirect the material

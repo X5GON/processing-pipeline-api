@@ -21,7 +21,7 @@ module.exports = {
                     topic: "UPDATE_MATERIAL_TEXT",
                     groupId: config.kafka.groupId,
                     high_water: 10,
-                    low_water: 0
+                    low_water: 2
                 }
             }
         }

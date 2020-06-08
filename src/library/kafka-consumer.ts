@@ -46,7 +46,7 @@ export default class KafkaConsumer {
             groupId,
             sessionTimeout: 15000,
             protocol: ["roundrobin"],
-            fromOffset: "latest",
+            fromOffset: "earliest",
             fetchMaxBytes: 104857600, // magic number
             outOfRangeOffset: "earliest",
             migrateHLC: false,

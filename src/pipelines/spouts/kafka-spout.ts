@@ -56,7 +56,7 @@ class KafkaSpout extends BasicSpout {
     async next() {
         const message = this._generator.next();
         // get the next message from the generator
-        return { data: message };
+        return message ? { data: message } : null;
     }
 }
 
