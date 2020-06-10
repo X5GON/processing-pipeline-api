@@ -116,7 +116,7 @@ module.exports = {
                             end_process_time: true
                         },
                         postgres_literal_attrs: {
-                            status: "material stored"
+                            status: "material processed"
                         },
                         document_error_path: "message",
                         final_bolt: true
