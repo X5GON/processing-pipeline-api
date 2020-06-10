@@ -46,13 +46,61 @@ module.exports = {
         ...(productionMode
             ? [
                 {
-                    name: "log.material.process.finished",
+                    name: "log.material.process.stored",
                     type: "inproc",
                     working_dir: "./pipelines/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
                             source: "store.pg.material.complete"
+                        }
+                    ],
+                    init: {
+                        pg: config.pg,
+                        postgres_table: "material_process_queue",
+                        postgres_primary_id: "material_url",
+                        message_primary_id: "urls.material_url",
+                        postgres_method: "update",
+                        postgres_literal_attrs: {
+                            status: "[STORE] material stored inside the database. Updating the search index"
+                        },
+                        document_error_path: "message"
+                    }
+                }
+            ]
+            : []),
+
+        // update elasticsearch index
+        {
+            name: "store.pg.material.elasticsearch",
+            type: "inproc",
+            working_dir: "./pipelines/bolts",
+            cmd: "es-material-new.js",
+            inputs: [
+                {
+                    source: productionMode
+                        ? "log.material.process.stored"
+                        : "store.pg.material.complete"
+                }
+            ],
+            init: {
+                elasticsearch: config.elasticsearch,
+                pg: config.pg,
+                final_bolt: !productionMode
+            }
+        },
+
+        // LOGGING STATE OF MATERIAL PROCESS
+        ...(productionMode
+            ? [
+                {
+                    name: "log.material.process.complete.finished",
+                    type: "inproc",
+                    working_dir: "./pipelines/bolts",
+                    cmd: "message-postgresql.js",
+                    inputs: [
+                        {
+                            source: "store.pg.material.elasticsearch"
                         }
                     ],
                     init: {

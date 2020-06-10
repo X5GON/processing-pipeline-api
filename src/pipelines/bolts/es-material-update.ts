@@ -7,11 +7,13 @@
 
 // modules
 import BasicBolt from "./basic-bolt";
+import PostgreSQL from "../../library/postgresQL";
 import Elasticsearch from "../../library/elasticsearch";
 
 class ElastisearchUpdate extends BasicBolt {
 
     private _es: Elasticsearch;
+    private _pg: PostgreSQL;
     private _finalBolt: boolean;
 
     constructor() {
@@ -28,6 +30,7 @@ class ElastisearchUpdate extends BasicBolt {
         this._prefix = `[ElastisearchUpdate ${this._name}]`;
 
         this._es = new Elasticsearch(config.elasticsearch);
+        this._pg = new PostgreSQL(config.pg);
 
         this._finalBolt = config.final_bolt;
     }
@@ -45,43 +48,22 @@ class ElastisearchUpdate extends BasicBolt {
         const {
             material_id,
             new_date,
-            language: origin_language,
             material_metadata: {
-                raw_text,
-                transcriptions,
                 wikipedia_concepts
             }
         } = message;
 
+        const mc = await this._pg.select({ material_id }, "material_contents");
         // set the material contents
         const contents = [];
         // prepare list of material contents
-        if (transcriptions) {
-            for (const language of Object.keys(transcriptions)) {
-                for (const extension of Object.keys(transcriptions[language])) {
-                    // get value of the language and extension
-                    const value = transcriptions[language][extension];
-
-                    // define the type of the transcriptions
-                    const type = language === origin_language
-                        ? "transcription"
-                        : "translation";
-
-                    contents.push({
-                        language,
-                        type,
-                        extension,
-                        value
-                    });
-                }
-            }
-        } else if (raw_text) {
-            // prepare the material content object
+        for (const content of mc) {
             contents.push({
-                language: origin_language,
-                type: "transcription",
-                extension: "plain",
-                value: raw_text
+                content_id: content.id,
+                language: content.language,
+                type: content.type,
+                extension: content.extension,
+                value: content.value.value
             });
         }
 

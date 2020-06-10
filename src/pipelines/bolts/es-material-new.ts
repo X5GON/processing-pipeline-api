@@ -76,7 +76,6 @@ class ElastisearchNew extends BasicBolt {
                 mimetype,
                 license
             },
-            material_contents,
             features_public,
             urls: {
                 material_url,
@@ -86,9 +85,12 @@ class ElastisearchNew extends BasicBolt {
         } = message;
 
 
+        const mc = await this._pg.select({ material_id }, "material_contents");
+
         const contents = [];
-        for (const content of material_contents) {
+        for (const content of mc) {
             contents.push({
+                content_id: content.id,
                 language: content.language,
                 type: content.type,
                 extension: content.extension,

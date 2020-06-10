@@ -167,7 +167,7 @@ module.exports = {
                         message_primary_id: "material_url",
                         postgres_method: "update",
                         postgres_literal_attrs: {
-                            status: "[TEXT] material content extracted: 2/4 steps completed. Retrieving translations"
+                            status: "[TEXT] material content extracted: 2/4 steps completed. Retrieving wikipedia concepts"
                         },
                         document_error_path: "message"
                     }
@@ -334,18 +334,6 @@ module.exports = {
                     ? [
                         {
                             source: "log.material.process.extract.text.raw",
-                            stream_id: "stream_error"
-                        }
-                    ]
-                    : []),
-                {
-                    source: "extract.text.ttp",
-                    stream_id: "stream_error"
-                },
-                ...(productionMode
-                    ? [
-                        {
-                            source: "log.material.process.extract.text.ttp",
                             stream_id: "stream_error"
                         }
                     ]

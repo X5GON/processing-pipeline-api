@@ -60,9 +60,9 @@ module.exports = {
                     ],
                     init: {
                         pg: config.pg,
-                        postgres_table: "material_process_queue",
-                        postgres_primary_id: "material_url",
-                        message_primary_id: "material_url",
+                        postgres_table: "material_update_queue",
+                        postgres_primary_id: "material_id",
+                        message_primary_id: "material_id",
                         postgres_method: "update",
                         postgres_literal_attrs: {
                             status: "[STORE] material stored inside the database. Updating the search index"
@@ -88,6 +88,7 @@ module.exports = {
             ],
             init: {
                 elasticsearch: config.elasticsearch,
+                pg: config.pg,
                 final_bolt: !productionMode
             }
         },
