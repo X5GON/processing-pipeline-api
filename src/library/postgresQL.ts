@@ -163,7 +163,7 @@ export default class PostgreSQL {
         // what to do when all of the batches were processed
         function _batchFinalFunction(error: Error) {
             cursor.close(() => {
-                cursor.release();
+                client.release();
                 return callback(error);
             });
         }
