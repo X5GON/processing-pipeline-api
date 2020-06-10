@@ -18,8 +18,9 @@ async function PopulateProcessQueue() {
         async (error, records, callback) => {
             for (const record of records) {
                 const { url, material_id } = record;
-                const existingMaterials = await pg.select({ material_url: url }, "material_process_queue");
-                if (existingMaterials.length === 0) {
+                const existingURL = await pg.select({ material_url: url }, "material_process_queue");
+                const existingOER = await pg.select({ id: material_id }, "oer_materials");
+                if (existingURL.length === 0 && existingOER.lenght > 0) {
                     await pg.insert({ material_url: url, material_id, status: "material processed" }, "material_process_queue");
                     included++;
                 }
