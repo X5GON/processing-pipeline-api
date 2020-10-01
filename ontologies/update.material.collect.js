@@ -49,6 +49,7 @@ module.exports = {
                         FROM URLS
                         LEFT JOIN oer_materials oer ON URLS.material_id = oer.id
                         LEFT JOIN providers     p   ON URLS.provider_id = p.id
+                        WHERE oer.mimetype NOT LIKE '%video%' AND oer.mimetype NOT LIKE '%audio%' AND oer.mimetype NOT LIKE '%image%'
                     ),
 
                     CONTENT AS (
