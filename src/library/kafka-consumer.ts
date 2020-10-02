@@ -9,16 +9,18 @@
 import * as Interfaces from "../Interfaces";
 
 // modules
-import * as k from "kafka-node";
-
+import { Kafka, Consumer } from "kafkajs";
 
 export default class KafkaConsumer {
 
+    private _kafka: Kafka;
+    private _consumer: Consumer;
+
     private _data: any[];
+    private _topic: string;
     private _high_water: number;
     private _low_water: number;
 
-    private _consumerGroup: k.ConsumerGroup;
     private _highWaterClearing: boolean;
     private _enabled: boolean;
 
@@ -27,76 +29,70 @@ export default class KafkaConsumer {
 
         const {
             host,
-            topic,
             groupId,
+            topic,
+            clientId,
             high_water,
             low_water
         } = params;
 
+        // create kafka connection
+        this._kafka = new Kafka({
+            clientId,
+            brokers: [host]
+        });
+
         // the message container
         this._data = [];
-
+        this._topic = topic;
         this._high_water = high_water;
         this._low_water = low_water;
 
-        // setup the consumer options
-        const options: k.ConsumerGroupOptions = {
-            kafkaHost: host,
-            ssl: true,
-            groupId,
-            sessionTimeout: 15000,
-            protocol: ["roundrobin"],
-            fromOffset: "earliest",
-            fetchMaxBytes: 10485700, // magic number
-            outOfRangeOffset: "earliest",
-            migrateHLC: false,
-            migrateRolling: true
-        };
+        this._consumer = this._kafka.consumer({ groupId });
 
-        // initialize the consumer group and flags
-        this._consumerGroup = new k.ConsumerGroup(options, [topic]);
         this._highWaterClearing = false;
-        this._enabled = true;
-
-        // setup the listener
-        this._consumerGroup.on("message", (message) => {
-            // get the message value and cast it to string
-            const messageValue = message.value.toString();
-
-            if (messageValue === "") { return; }
-            // push the new message to the container
-            this._data.push(JSON.parse(messageValue));
-
-            // handle large amount of data
-            if (this._data.length >= this._high_water) {
-                this._highWaterClearing = true;
-                this._consumerGroup.pause();
-            }
-        });
+        this._enabled = false;
     }
 
+    // connect to the consumer
+    async connect() {
+        await this._consumer.connect();
+        await this._consumer.subscribe({ topic: this._topic });
+        await this._consumer.run({
+            eachMessage: async ({ message }) => {
+                const messageValue = message.value.toString();
+                if (messageValue === "") { return; }
+                this._data.push(JSON.parse(messageValue));
+
+                if (this._data.length >= this._high_water) {
+                    this._highWaterClearing = true;
+                    this._consumer.pause([{ topic: this._topic }]);
+                }
+            }
+        });
+        this._enabled = true;
+        return this._enabled;
+    }
 
     // enables message consumption
     enable() {
         if (!this._enabled) {
             if (!this._highWaterClearing) {
-                this._consumerGroup.resume();
+                this._consumer.resume([{ topic: this._topic }]);
             }
             this._enabled = true;
         }
     }
 
-
     // disables message consumption
     disable() {
         if (this._enabled) {
             if (!this._highWaterClearing) {
-                this._consumerGroup.pause();
+                this._consumer.pause([{ topic: this._topic }]);
             }
             this._enabled = false;
         }
     }
-
 
     // get the next message
     next() {
@@ -108,17 +104,11 @@ export default class KafkaConsumer {
             this._data = this._data.slice(1);
             if (this._data.length <= this._low_water) {
                 this._highWaterClearing = false;
-                this._consumerGroup.resume();
+                this._consumer.resume([{ topic: this._topic }]);
             }
             return msg;
         } else {
             return null;
         }
-    }
-
-
-    // stop and closes the consumer group
-    stop(cb: Interfaces.IGenericCallbackFunc) {
-        this._consumerGroup.close(true, cb);
     }
 }

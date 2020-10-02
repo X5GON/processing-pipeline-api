@@ -115,9 +115,26 @@ export interface IConfiguration {
 export interface IKafkaConsumerParams {
     host: string;
     topic: string;
+    clientId: string;
     groupId: string;
     high_water: number;
     low_water: number;
+}
+
+
+export interface IKafkaProducerRequest {
+    topic: string;
+    messages: { value: any }[]
+}
+
+/////////////////////////////////////////////////////////////////////
+// Languages Interfaces
+/////////////////////////////////////////////////////////////////////
+
+export enum ILanguageTypes {
+    FULLNAME = "fullname",
+    ALPHA2 = "alpha2",
+    ALPHA3 = "alpha3"
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -222,6 +239,55 @@ export interface IWikifierConceptMapping {
 /////////////////////////////////////////////////////////////////////
 
 import * as qtolopology from "qtopology";
+
+///////////////////////////////////////
+// Doc Type Bolt
+///////////////////////////////////////
+
+export interface IDocTypeBoltConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    document_location_path: string;
+    document_type_path: string;
+    document_error_path?: string;
+}
+
+///////////////////////////////////////
+// OCR Bolt
+///////////////////////////////////////
+
+export interface IOcrBoltConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    document_location_path: string;
+    document_location_type?: string;
+    document_language_path: string;
+    document_ocr_path: string;
+    ocr_data_folder?: string;
+    ocr_verbose?: boolean;
+    document_error_path?: string;
+    temporary_folder: string;
+}
+
+///////////////////////////////////////
+// PDF Bolt
+///////////////////////////////////////
+
+export enum IPdfMetadata {
+    PAGES = "pages",
+    INFO = "info",
+    METADATA = "metadata",
+    TEXT = "text"
+}
+
+export interface IPdfBoltConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    document_location_path: string;
+    document_pdf_path: string;
+    document_error_path?: string;
+    document_location_type?: string;
+    pdf_extract_metadata?: IPdfMetadata[];
+    pdf_trim_text?: boolean;
+    convert_to_pdf?: boolean;
+}
 
 ///////////////////////////////////////
 // Extract Text Raw
@@ -372,6 +438,7 @@ export interface IMessageForwardKafka {
     kafka: {
         host: string;
         topic: string;
+        clientId: string;
     }
     format_message?: IFormatMessage
 }

@@ -10,15 +10,16 @@ module.exports = {
         {
             name: "kafka.recsys.selection",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_RECSYS_SELECTION",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 2
+                    clientId: "STORE_RECSYS_SELECTION",
+                    groupId: `${config.kafka.groupId}_STORE_RECSYS_SELECTION`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         }
@@ -27,7 +28,7 @@ module.exports = {
         {
             name: "store.pg.recsys.selection",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "store-pg-recsys-selections.js",
             inputs: [
                 {

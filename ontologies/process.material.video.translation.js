@@ -1,7 +1,7 @@
 // global configuration
 const { default: config } = require("../dist/config/config");
 
-const formatMessages = require("../dist/pipelines/utils/format-materials");
+const formatMessages = require("../dist/components/utils/format-materials");
 
 const productionMode = config.isProduction;
 
@@ -15,14 +15,15 @@ module.exports = {
         {
             name: "input.kafka.video",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "PREPROC_MATERIAL_VIDEO_TRANSLATION",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
+                    clientId: "PREPROC_MATERIAL_VIDEO_TRANSLATION",
+                    groupId: `${config.kafka.groupId}_PREPROC_MATERIAL_VIDEO_TRANSLATION`,
+                    high_water: 5,
                     low_water: 0
                 }
             }
@@ -35,7 +36,7 @@ module.exports = {
                 {
                     name: "log.material.process.started",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -101,7 +102,7 @@ module.exports = {
                 {
                     name: "log.material.process.formatting",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -123,71 +124,71 @@ module.exports = {
             ]
             : []),
 
+        // {
+        //     name: "extract.video.ttp",
+        //     type: "inproc",
+        //     working_dir: "./components/bolts",
+        //     cmd: "extract-video-ttp.js",
+        //     inputs: [
+        //         {
+        //             source: productionMode
+        //                 ? "log.material.process.formatting"
+        //                 : "transform.material"
+        //         }
+        //     ],
+        //     init: {
+        //         ttp: {
+        //             user: config.ttp.user,
+        //             token: config.ttp.token
+        //         },
+        //         document_language_path: "language",
+        //         document_location_path: "material_url",
+        //         document_authors_path: "authors",
+        //         document_title_path: "title",
+        //         document_text_path: "material_metadata.raw_text",
+        //         document_transcriptions_path: "material_metadata.transcriptions",
+        //         ttp_id_path: "material_metadata.ttp_id"
+        //     }
+        // },
+
+        // // LOGGING STATE OF MATERIAL PROCESS
+        // ...(productionMode
+        //     ? [
+        //         {
+        //             name: "log.material.process.extract.video.ttp",
+        //             type: "inproc",
+        //             working_dir: "./components/bolts",
+        //             cmd: "message-postgresql.js",
+        //             inputs: [
+        //                 {
+        //                     source: "extract.video.ttp"
+        //                 }
+        //             ],
+        //             init: {
+        //                 pg: config.pg,
+        //                 postgres_table: "material_process_queue",
+        //                 postgres_primary_id: "material_url",
+        //                 message_primary_id: "material_url",
+        //                 postgres_method: "update",
+        //                 postgres_literal_attrs: {
+        //                     status: "[VIDEO] material transcriptions and translations retrieved: 2/4 steps completed. Retrieving wikipedia concepts"
+        //                 },
+        //                 document_error_path: "message"
+        //             }
+        //         }
+        //     ]
+        //     : []),
+
         {
-            name: "extract.video.ttp",
+            name: "extract.wikipedia",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
-            cmd: "extract-video-ttp.js",
+            working_dir: "./components/bolts",
+            cmd: "extract-wikipedia.js",
             inputs: [
                 {
                     source: productionMode
                         ? "log.material.process.formatting"
                         : "transform.material"
-                }
-            ],
-            init: {
-                ttp: {
-                    user: config.ttp.user,
-                    token: config.ttp.token
-                },
-                document_language_path: "language",
-                document_location_path: "material_url",
-                document_authors_path: "authors",
-                document_title_path: "title",
-                document_text_path: "material_metadata.raw_text",
-                document_transcriptions_path: "material_metadata.transcriptions",
-                ttp_id_path: "material_metadata.ttp_id"
-            }
-        },
-
-        // LOGGING STATE OF MATERIAL PROCESS
-        ...(productionMode
-            ? [
-                {
-                    name: "log.material.process.extract.video.ttp",
-                    type: "inproc",
-                    working_dir: "./pipelines/bolts",
-                    cmd: "message-postgresql.js",
-                    inputs: [
-                        {
-                            source: "extract.video.ttp"
-                        }
-                    ],
-                    init: {
-                        pg: config.pg,
-                        postgres_table: "material_process_queue",
-                        postgres_primary_id: "material_url",
-                        message_primary_id: "material_url",
-                        postgres_method: "update",
-                        postgres_literal_attrs: {
-                            status: "[VIDEO] material transcriptions and translations retrieved: 2/4 steps completed. Retrieving wikipedia concepts"
-                        },
-                        document_error_path: "message"
-                    }
-                }
-            ]
-            : []),
-
-        {
-            name: "extract.wikipedia",
-            type: "inproc",
-            working_dir: "./pipelines/bolts",
-            cmd: "extract-wikipedia.js",
-            inputs: [
-                {
-                    source: productionMode
-                        ? "log.material.process.extract.video.ttp"
-                        : "extract.video.ttp"
                 }
             ],
             init: {
@@ -208,7 +209,7 @@ module.exports = {
                 {
                     name: "log.material.process.extract.wikipedia",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -233,7 +234,7 @@ module.exports = {
         {
             name: "message.validate",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-validate.js",
             inputs: [
                 {
@@ -254,7 +255,7 @@ module.exports = {
                 {
                     name: "log.material.process.message.validate",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -284,7 +285,7 @@ module.exports = {
         {
             name: "kafka.material.complete",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -296,7 +297,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "STORE_MATERIAL_COMPLETE"
+                    topic: "STORE_MATERIAL_COMPLETE",
+                    clientId: "STORE_MATERIAL_COMPLETE"
                 },
                 format_message: formatMessages.formatMaterialComplete
             }
@@ -386,7 +388,7 @@ module.exports = {
                 {
                     name: "log.material.process.error",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -412,7 +414,7 @@ module.exports = {
         {
             name: "kafka.material.partial",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -425,7 +427,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "STORE_MATERIAL_INCOMPLETE"
+                    topic: "STORE_MATERIAL_INCOMPLETE",
+                    clientId: "STORE_MATERIAL_INCOMPLETE"
                 },
                 format_message: formatMessages.formatMaterialPartial
             }

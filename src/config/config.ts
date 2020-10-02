@@ -48,7 +48,7 @@ const production = {
     },
     kafka: {
         host: process.env.PROD_KAFKA_HOST || "127.0.0.1:9092",
-        groupId: process.env.PROD_KAFKA_GROUP || "productionGroup"
+        groupId: process.env.PROD_KAFKA_GROUP || "PROD_GROUP"
     },
     pg: {
         host: process.env.PROD_PG_HOST || "127.0.0.1",
@@ -70,7 +70,7 @@ const development = {
     },
     kafka: {
         host: process.env.DEV_KAFKA_HOST || "127.0.0.1:9092",
-        groupId: process.env.DEV_KAFKA_GROUP || "developmentGroup"
+        groupId: process.env.DEV_KAFKA_GROUP || "DEV_GROUP"
     },
     pg: {
         host: process.env.DEV_PG_HOST || "127.0.0.1",
@@ -92,7 +92,7 @@ const test = {
     },
     kafka: {
         host: process.env.TEST_KAFKA_HOST || "127.0.0.1:9092",
-        groupId: process.env.TEST_KAFKA_GROUP || "testGroup"
+        groupId: process.env.TEST_KAFKA_GROUP || "TEST_GROUP"
     },
     pg: {
         host: process.env.TEST_PG_HOST || "127.0.0.1",

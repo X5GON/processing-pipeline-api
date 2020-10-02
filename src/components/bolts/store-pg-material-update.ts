@@ -146,7 +146,6 @@ class StoreMaterialUpdate extends BasicBolt {
             // /////////////////////////////////////////
             // RUN THE TASKS
             // /////////////////////////////////////////
-
             if (this._finalBolt) { return; }
             return await this._onEmit(message, stream_id);
 

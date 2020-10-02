@@ -27,6 +27,7 @@ class KafkaSpout extends BasicSpout {
         this._context = context;
         this._prefix = `[KafkaSpout ${this._name}]`;
         this._generator = new KafkaConsumer(config.kafka);
+        await this._generator.connect();
     }
 
     heartbeat() {
@@ -34,13 +35,7 @@ class KafkaSpout extends BasicSpout {
     }
 
     async shutdown() {
-        // stop kafka generator
-        const promise = new Promise((resolve, reject) => {
-            this._generator.stop(() => {
-                return resolve();
-            });
-        });
-        await promise;
+        this._generator.disable();
     }
 
     run() {

@@ -10,30 +10,32 @@ module.exports = {
         {
             name: "kafka.user-activities.visits",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_USERACTIVITY_VISIT",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 1
+                    clientId: "STORE_USERACTIVITY_VISIT",
+                    groupId: `${config.kafka.groupId}_STORE_USERACTIVITY_VISIT`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         },
         {
             name: "kafka.user-activities.video",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_USERACTIVITY_VIDEO",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 1
+                    clientId: "STORE_USERACTIVITY_VIDEO",
+                    groupId: `${config.kafka.groupId}_STORE_USERACTIVITY_VIDEO`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         }
@@ -45,7 +47,7 @@ module.exports = {
         {
             name: "store.pg.user-activity.visits",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "store-pg-user-activity-visits.js",
             inputs: [
                 {
@@ -63,7 +65,7 @@ module.exports = {
         {
             name: "log.user-activity.connect",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-logging.js",
             inputs: [
                 {

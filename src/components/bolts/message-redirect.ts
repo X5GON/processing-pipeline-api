@@ -49,7 +49,7 @@ class MessageRedirect extends BasicBolt {
         } else {
             stream_id = "unknown";
         }
-
+        console.log("material type:", stream_id);
         // redirect the material
         return await this._onEmit(material, stream_id);
     }
