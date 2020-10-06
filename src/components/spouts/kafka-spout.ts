@@ -35,21 +35,27 @@ class KafkaSpout extends BasicSpout {
     }
 
     async shutdown() {
-        this._generator.disable();
+        if (this._generator) {
+            this._generator.disable();
+        }
     }
 
     run() {
-        // enable kafka generator
-        this._generator.enable();
+        if (this._generator) {
+            // enable kafka generator
+            this._generator.enable();
+        }
     }
 
     pause() {
-        // disable kafka generator
-        this._generator.disable();
+        if (this._generator) {
+            // disable kafka generator
+            this._generator.disable();
+        }
     }
 
     async next() {
-        const message = this._generator.next();
+        const message = this._generator ? this._generator.next() : null;
         // get the next message from the generator
         return message ? { data: message } : null;
     }

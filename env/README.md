@@ -22,9 +22,6 @@ one of the developers contributing to this project.
 ### Production variables
 #######################################
 
-######################################
-# Platform
-
 # postgres database password
 PROD_PG_PASSWORD=postgres-password
 
