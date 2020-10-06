@@ -119,6 +119,7 @@ export interface IKafkaConsumerParams {
     groupId: string;
     high_water: number;
     low_water: number;
+    fromBeginning?: boolean;
 }
 
 

@@ -70,10 +70,10 @@ module.exports = {
                     )
                     AND material_id NOT IN (SELECT material_id FROM material_update_queue)
                     ORDER BY u_count DESC
-                    LIMIT 100;
+                    LIMIT 50;
                 `, // TODO: add the SQL statement for checking if the material is already in the queue
                 // repeat every one day
-                time_interval: 4 * 60 * 60 * 1000
+                time_interval: 2 * 60 * 60 * 1000
             }
         }
     ],
@@ -115,7 +115,9 @@ module.exports = {
             working_dir: "./components/bolts",
             cmd: "message-redirect.js",
             inputs: [{ source: "update.material.transform" }],
-            init: {}
+            init: {
+                last_updated: "2019-08-01"
+            }
         },
         // LOGGING STATE OF MATERIAL PROCESS
         ...(productionMode

@@ -21,7 +21,8 @@ module.exports = {
                     clientId: "UPDATE_MATERIAL_CONTENT",
                     groupId: `${config.kafka.groupId}_UPDATE_MATERIAL_CONTENT`,
                     high_water: 100,
-                    low_water: 10
+                    low_water: 10,
+                    fromBeginning: true
                 }
             }
         }

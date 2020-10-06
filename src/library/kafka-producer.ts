@@ -47,7 +47,6 @@ export default class KafkaProducer {
                 await this._producer.send(message);
             }
         }
-        console.log("Kafka Producer Connected");
         return this._ready;
     }
 

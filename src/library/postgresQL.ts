@@ -143,8 +143,8 @@ export default class PostgreSQL {
         const client = await this._pool.connect();
         // create a cursor (with or without the parameters provided)
         const cursor = params.length
-            ? client.query(new Cursor(statement, params))
-            : client.query(new Cursor(statement));
+            ? await client.query(new Cursor(statement, params))
+            : await client.query(new Cursor(statement));
 
         let lastBatch = batchSize;
         // This function designates what to do with the values read by the cursor.

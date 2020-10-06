@@ -7,6 +7,8 @@ import * as Interfaces from "../../Interfaces";
 
 class MessageRedirect extends BasicBolt {
 
+    private _lastUpdated: string;
+
     constructor() {
         super();
         this._name = null;
@@ -19,6 +21,7 @@ class MessageRedirect extends BasicBolt {
         this._context = context;
         this._onEmit = config.onEmit;
         this._prefix = `[MessageRedirect ${this._name}]`;
+        this._lastUpdated = config.last_updated;
     }
 
     heartbeat() {
@@ -37,7 +40,7 @@ class MessageRedirect extends BasicBolt {
 
         const date = new Date(retrieved_date);
         // check if the video and audio materials were retrieved before 2019-07-01
-        const limitDate = new Date("2019-08-01");
+        const limitDate = new Date(this._lastUpdated);
         if (date >= limitDate) {
             stream_id = "updated";
         } else if (mimetypes.video.includes(mimetype)) {
@@ -49,7 +52,6 @@ class MessageRedirect extends BasicBolt {
         } else {
             stream_id = "unknown";
         }
-        console.log("material type:", stream_id);
         // redirect the material
         return await this._onEmit(material, stream_id);
     }

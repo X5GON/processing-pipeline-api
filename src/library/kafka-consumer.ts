@@ -20,6 +20,7 @@ export default class KafkaConsumer {
     private _topic: string;
     private _high_water: number;
     private _low_water: number;
+    private _fromBeginning: boolean;
 
     private _highWaterClearing: boolean;
     private _enabled: boolean;
@@ -33,7 +34,8 @@ export default class KafkaConsumer {
             topic,
             clientId,
             high_water,
-            low_water
+            low_water,
+            fromBeginning
         } = params;
 
         // create kafka connection
@@ -47,6 +49,7 @@ export default class KafkaConsumer {
         this._topic = topic;
         this._high_water = high_water;
         this._low_water = low_water;
+        this._fromBeginning = fromBeginning || false;
 
         this._consumer = this._kafka.consumer({ groupId });
 
@@ -57,7 +60,7 @@ export default class KafkaConsumer {
     // connect to the consumer
     async connect() {
         await this._consumer.connect();
-        await this._consumer.subscribe({ topic: this._topic });
+        await this._consumer.subscribe({ topic: this._topic, fromBeginning: this._fromBeginning });
         await this._consumer.run({
             eachMessage: async ({ message }) => {
                 const messageValue = message.value.toString();
