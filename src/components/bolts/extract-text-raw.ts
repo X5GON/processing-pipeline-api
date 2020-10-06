@@ -11,7 +11,7 @@ import * as Interfaces from "../../Interfaces";
 
 // modules
 import BasicBolt from "./basic-bolt";
-import * as textract from "../../../pkgs/textract";
+import * as textract from "../../../pkgs/textract/lib";
 
 class ExtractTextRaw extends BasicBolt {
 
@@ -87,17 +87,25 @@ class ExtractTextRaw extends BasicBolt {
             // the material already have the raw text extracted
             return await this._onEmit(message, stream_id);
         }
-        // extract raw text using the assigned method type
-        textract[this._methodType](materialUrl, this._textractConfig, async (error: Error, text: string) => {
-            if (error) {
-                const errorMessage = `${this._prefix} Not able to extract text: ${error.message}`;
-                this.set(message, this._documentErrorPath, errorMessage);
-                return await this._onEmit(message, "stream_error");
-            }
+
+        const extractText: Promise<string> = new Promise((resolve, reject) => {
+            // extract raw text using the assigned method type
+            textract[this._methodType](materialUrl, this._textractConfig, (error: Error, text: string) => {
+                if (error) { return reject(error) };
+                return resolve(text);
+            });
+        });
+
+        try {
+            const text = await extractText;
             // save the raw text within the metadata
             this.set(message, this._documentTextPath, text);
             return await this._onEmit(message, stream_id);
-        });
+        } catch (error) {
+            const errorMessage = `${this._prefix} Not able to extract text: ${error.message}`;
+            this.set(message, this._documentErrorPath, errorMessage);
+            return await this._onEmit(message, "stream_error");
+        }
     }
 }
 

@@ -111,3 +111,5 @@ dist
 
 # visual studio configs
 .vscode
+
+docker/*.yml

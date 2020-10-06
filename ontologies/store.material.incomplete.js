@@ -12,15 +12,16 @@ module.exports = {
         {
             name: "kafka.material.partial",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_MATERIAL_INCOMPLETE",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 1
+                    clientId: "STORE_MATERIAL_INCOMPLETE",
+                    groupId: `${config.kafka.groupId}_STORE_MATERIAL_INCOMPLETE`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         }
@@ -29,7 +30,7 @@ module.exports = {
         {
             name: "store.pg.material.partial",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "store-pg-material-partial.js",
             inputs: [
                 {
@@ -47,7 +48,7 @@ module.exports = {
                 {
                     name: "log.material.process.finished",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {

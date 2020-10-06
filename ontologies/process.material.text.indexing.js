@@ -1,7 +1,7 @@
 // global configuration
 const { default: config } = require("../dist/config/config");
 
-const formatMessages = require("../dist/pipelines/utils/format-materials");
+const formatMessages = require("../dist/components/utils/format-materials");
 
 const productionMode = config.isProduction;
 
@@ -15,13 +15,14 @@ module.exports = {
         {
             name: "input.kafka.text",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "PREPROC_MATERIAL_TEXT_INDEXING",
-                    groupId: config.kafka.groupId,
+                    clientId: "PREPROC_MATERIAL_TEXT_INDEXING",
+                    groupId: `${config.kafka.groupId}_PREPROC_MATERIAL_TEXT_INDEXING`,
                     high_water: 10,
                     low_water: 0
                 }
@@ -35,7 +36,7 @@ module.exports = {
                 {
                     name: "log.material.process.started",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -100,7 +101,7 @@ module.exports = {
                 {
                     name: "log.material.process.formatting",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -125,7 +126,7 @@ module.exports = {
         {
             name: "extract.text.raw",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "extract-text-raw.js",
             inputs: [
                 {
@@ -153,7 +154,7 @@ module.exports = {
                 {
                     name: "log.material.process.extract.text.raw",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -178,7 +179,7 @@ module.exports = {
         {
             name: "extract.wikipedia",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "extract-wikipedia.js",
             inputs: [
                 {
@@ -205,7 +206,7 @@ module.exports = {
                 {
                     name: "log.material.process.extract.wikipedia",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -230,7 +231,7 @@ module.exports = {
         {
             name: "message.validate",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-validate.js",
             inputs: [
                 {
@@ -251,7 +252,7 @@ module.exports = {
                 {
                     name: "log.material.process.message.validate",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -281,7 +282,7 @@ module.exports = {
         {
             name: "kafka.material.complete",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -293,7 +294,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "STORE_MATERIAL_COMPLETE"
+                    topic: "STORE_MATERIAL_COMPLETE",
+                    clientId: "STORE_MATERIAL_COMPLETE"
                 },
                 format_message: formatMessages.formatMaterialComplete
             }
@@ -383,7 +385,7 @@ module.exports = {
                 {
                     name: "log.material.process.error",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -409,7 +411,7 @@ module.exports = {
         {
             name: "kafka.material.partial",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -422,7 +424,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "STORE_MATERIAL_INCOMPLETE"
+                    topic: "STORE_MATERIAL_INCOMPLETE",
+                    clientId: "STORE_MATERIAL_INCOMPLETE"
                 },
                 format_message: formatMessages.formatMaterialPartial
             }

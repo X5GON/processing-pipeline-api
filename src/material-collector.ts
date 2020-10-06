@@ -43,11 +43,13 @@ class MaterialCollector {
         this._consumer = new KafkaConsumer({
             host: params.kafka.host,
             topic: "STORE_USERACTIVITY_VISIT",
-            groupId: `${params.kafka.groupId}.MATERIAL.COLLECTOR`,
+            groupId: `${params.kafka.groupId}_STORE_USERACTIVITY_VISIT`,
+            clientId: "material-collector",
             high_water: 10,
             low_water: 1
         });
-        this._producer = new KafkaProducer(params.kafka.host);
+
+        this._producer = new KafkaProducer("material-collector", params.kafka.host);
         // define kafka topic names
         this._textTopic = "PREPROC_MATERIAL_TEXT";
         this._videoTopic = "PREPROC_MATERIAL_VIDEO";
@@ -67,6 +69,10 @@ class MaterialCollector {
         logger.info("[MaterialCollector] collector initialized");
     }
 
+    async connectToKafka() {
+        await this._consumer.connect();
+        await this._producer.connect();
+    }
 
     // adds an API retriever to the list
     addRetriever(settings: Interfaces.IConfigRetriever) {
@@ -255,12 +261,12 @@ class MaterialCollector {
                         stack: error.stack
                     }
                 });
-                return;
+                return null;
             }
         }
         logger.info(`[upload] ${type} material = ${material.material_url}`);
         // send material to kafka
-        return this._producer.send(topic, material);
+        return await this._producer.send(topic, material);
     }
 }
 
@@ -271,6 +277,9 @@ class MaterialCollector {
 
 // initialize a material collector
 const collector = new MaterialCollector(config);
+
+// connect to kafka broker
+collector.connectToKafka();
 
 // set interval to check for new log after every second
 const interval = setInterval(() => {
@@ -286,10 +295,7 @@ function shutdown(error: any) {
     collector.stopRetriever(null, true);
     // stop the Kafka consumer before
     // shutting down the process
-    collector._consumer.stop(() => {
-        console.log("Stopped retrieving requests");
-        return process.exit(0);
-    });
+    collector._consumer.disable();
 }
 
 // catches ctrl+c event

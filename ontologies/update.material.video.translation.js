@@ -13,14 +13,15 @@ module.exports = {
         {
             name: "input.kafka.video",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "UPDATE_MATERIAL_VIDEO",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
+                    clientId: "UPDATE_MATERIAL_VIDEO",
+                    groupId: `${config.kafka.groupId}_UPDATE_MATERIAL_VIDEO`,
+                    high_water: 5,
                     low_water: 0
                 }
             }
@@ -33,7 +34,7 @@ module.exports = {
                 {
                     name: "log.material.update.started",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -60,7 +61,7 @@ module.exports = {
         {
             name: "extract.video.ttp",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "extract-video-ttp.js",
             inputs: [
                 {
@@ -90,7 +91,7 @@ module.exports = {
                 {
                     name: "log.material.update.extract.video.ttp",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -116,7 +117,7 @@ module.exports = {
         {
             name: "extract.wikipedia",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "extract-wikipedia.js",
             inputs: [
                 {
@@ -143,7 +144,7 @@ module.exports = {
                 {
                     name: "log.material.update.extract.wikipedia",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -173,7 +174,7 @@ module.exports = {
         {
             name: "kafka.material.content",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -185,7 +186,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "UPDATE_MATERIAL_CONTENT"
+                    topic: "UPDATE_MATERIAL_CONTENT",
+                    clientId: "UPDATE_MATERIAL_CONTENT"
                 }
             }
         },
@@ -197,7 +199,7 @@ module.exports = {
                 {
                     name: "log.material.update.error",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         ...(productionMode

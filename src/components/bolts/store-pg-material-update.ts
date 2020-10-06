@@ -57,7 +57,6 @@ class StoreMaterialUpdate extends BasicBolt {
             }
         } = message;
 
-
         const newDate = (new Date()).toISOString();
 
         try {
@@ -151,6 +150,7 @@ class StoreMaterialUpdate extends BasicBolt {
             return await this._onEmit(message, stream_id);
 
         } catch (error) {
+            console.log(error);
             // error handling
             return;
         }

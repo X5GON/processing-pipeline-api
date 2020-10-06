@@ -13,7 +13,7 @@ module.exports = {
         {
             name: "input.postgres.materials",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "postgres-spout.js",
             init: {
                 pg: config.pg,
@@ -73,7 +73,7 @@ module.exports = {
                     LIMIT 50;
                 `, // TODO: add the SQL statement for checking if the material is already in the queue
                 // repeat every one day
-                time_interval: 4 * 60 * 60 * 1000
+                time_interval: 2 * 60 * 60 * 1000
             }
         }
     ],
@@ -112,10 +112,12 @@ module.exports = {
         {
             name: "update.material.redirect",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-redirect.js",
             inputs: [{ source: "update.material.transform" }],
-            init: {}
+            init: {
+                last_updated: "2019-08-01"
+            }
         },
         // LOGGING STATE OF MATERIAL PROCESS
         ...(productionMode
@@ -123,7 +125,7 @@ module.exports = {
                 {
                     name: "log.material.process.finished",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -155,7 +157,7 @@ module.exports = {
                 {
                     name: "log.material.process.unknown",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -187,7 +189,7 @@ module.exports = {
                 {
                     name: "log.material.process.text",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -218,7 +220,7 @@ module.exports = {
                 {
                     name: "log.material.process.video",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -249,7 +251,7 @@ module.exports = {
                 {
                     name: "log.material.process.audio",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -278,7 +280,7 @@ module.exports = {
         {
             name: "kafka.material.update.text",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -291,14 +293,15 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "UPDATE_MATERIAL_TEXT"
+                    topic: "UPDATE_MATERIAL_TEXT",
+                    clientId: "UPDATE_MATERIAL_TEXT"
                 }
             }
         },
         {
             name: "kafka.material.update.video",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "message-forward-kafka.js",
             inputs: [
                 {
@@ -317,7 +320,8 @@ module.exports = {
             init: {
                 kafka: {
                     host: config.kafka.host,
-                    topic: "UPDATE_MATERIAL_VIDEO"
+                    topic: "UPDATE_MATERIAL_VIDEO",
+                    clientId: "UPDATE_MATERIAL_VIDEO"
                 }
             }
         }

@@ -34,9 +34,10 @@ class MessageForwardKafka extends BasicBolt {
         this._onEmit = config.onEmit;
         this._prefix = `[MessageForwardKafka ${this._name}]`;
 
-        this._kafkaProducer = new KafkaProducer(config.kafka.host);
-        this._kafkaTopic = config.kafka.topic;
+        this._kafkaProducer = new KafkaProducer(config.kafka.clientId, config.kafka.host);
+        await this._kafkaProducer.connect();
 
+        this._kafkaTopic = config.kafka.topic;
         this._formatMessage = config.format_message;
     }
 
@@ -46,21 +47,14 @@ class MessageForwardKafka extends BasicBolt {
 
     async shutdown() {
         // shutdown component
+        await this._kafkaProducer.disconnect();
     }
 
     async receive(message: any, stream_id: string) {
-
         if (this._formatMessage) {
             message = this._formatMessage(message);
         }
-
-        // send the message to the database topics
-        const promise = new Promise((resolve, reject) => {
-            this._kafkaProducer.send(this._kafkaTopic, message, () => {
-                return resolve();
-            });
-        });
-        await promise;
+        await this._kafkaProducer.send(this._kafkaTopic, message);
         return;
     }
 }

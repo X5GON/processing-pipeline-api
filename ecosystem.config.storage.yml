@@ -1,0 +1,41 @@
+apps:
+  - script: "pipeline.js"
+    name: "x5store_user_activity_connect"
+    cwd: "./dist/"
+    args: "-tn uuid.store.user_activity.connect -tp ../ontologies/store.user_activity.connect"
+    instances: 1,
+    exec_mode: "fork"
+    autorestart: true
+    watch: false
+    env:
+      NODE_ENV: "development"
+    env_production:
+      NODE_ENV: "production"
+
+
+  - script: "pipeline.js"
+    name: "x5store_recsys_selection"
+    cwd: "./dist/"
+    args: "-tn uuid.store.recsys.selection -tp ../ontologies/store.recsys.selection"
+    instances: 1,
+    exec_mode: "fork"
+    autorestart: true
+    watch: false
+    env:
+      NODE_ENV: "development"
+    env_production:
+      NODE_ENV: "production"
+
+
+  - script: "pipeline.js"
+    name: "x5store_join_providers"
+    cwd: "./dist/"
+    args: "-tn uuid.store.join.providers -tp ../ontologies/store.join.providers"
+    instances: 1,
+    exec_mode: "fork"
+    autorestart: true
+    watch: false
+    env:
+      NODE_ENV: "development"
+    env_production:
+      NODE_ENV: "production"

@@ -9,68 +9,69 @@
 import * as Interfaces from "../Interfaces";
 
 // modules
-import * as k from "kafka-node";
-
+import { Kafka, Producer } from "kafkajs";
 
 export default class KafkaProducer {
 
+    private _kafka: Kafka;
+    private _producer: Producer;
     private _ready: boolean;
-    private _payloads: k.ProduceRequest[][];
-    private _producer: k.HighLevelProducer;
+    private _payloads: Interfaces.IKafkaProducerRequest[];
 
     // initialize a kafka producer
-    constructor(host: string) {
-
-        const options: k.KafkaClientOptions = {
-            kafkaHost: host
-        };
-
+    constructor(clientId: string, host: string) {
+        // create kafka connection
+        this._kafka = new Kafka({
+            clientId,
+            brokers: [host]
+        });
+        // create a kafka producer
+        this._producer = this._kafka.producer();
+        // set metadata
         this._ready = false;
         this._payloads = [];
-        const client = new k.KafkaClient(options);
-        // create a kafka producer
-        this._producer = new k.HighLevelProducer(client);
-
-        // make the producer ready
-        this._producer.on("ready", () => {
-            this._ready = true;
-            // check if there are any messages not sent
-            if (this._payloads.length) {
-                // send all messages to the appropriate
-                while (this._payloads.length) {
-                    // get the first element from the array of messages
-                    const message = this._payloads[0];
-                    // update the messages array
-                    this._payloads = this._payloads.slice(1);
-                    // send the message to the corresponsing topic
-                    this._producer.send(message, (xerror, data) => {
-                        if (xerror) { console.log(xerror); }
-                    });
-                }
-            }
-        });
     }
 
-    // sends the message to the appropirate topic
-    send(topic: string, msg: any, cb?: Interfaces.IGenericCallbackFunc) {
-        // get set callback value
-        const callback = cb && typeof (cb) !== "function"
-            ? (error: Error) => { if (error) { console.log(error); } }
-            : cb;
+    // connect to the kafka broker
+    async connect() {
+        await this._producer.connect();
+        this._ready = true;
+        if (this._payloads.length) {
+            // send all messages to the appropriate
+            while (this._payloads.length) {
+                // get the first element from the array of messages
+                const message = this._payloads[0];
+                // update the messages array
+                this._payloads = this._payloads.slice(1);
+                // send the message to the corresponsing topic
+                await this._producer.send(message);
+            }
+        }
+        return this._ready;
+    }
 
-        // prepare the message in string
-        const messages = JSON.stringify(msg);
-        const payload: k.ProduceRequest[] = [{ topic, messages }];
-        if (this._ready) {
-            // the producer is ready to send the messages
-            this._producer.send(payload, (error, data) => {
-                if (error) { return callback(error); }
-                return callback(null);
-            });
-        } else {
-            // store the topic and message to send afterwards
-            this._payloads.push(payload);
-            return callback(null);
+    // disconnect from the broker
+    async disconnect() {
+        await this._producer.disconnect();
+        this._ready = false;
+        return this._ready;
+    }
+
+    // sends the message to the appropriate topic
+    async send(topic: string, msg: any) {
+        try {
+            // prepare the message in string
+            const messages = [{ value: JSON.stringify(msg) }];
+            const payload: Interfaces.IKafkaProducerRequest = { topic, messages };
+            if (this._ready) {
+                await this._producer.send(payload);
+            } else {
+                // store the topic and message to send afterwards
+                this._payloads.push(payload);
+            }
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 }

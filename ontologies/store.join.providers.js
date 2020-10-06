@@ -10,15 +10,16 @@ module.exports = {
         {
             name: "kafka.providers",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_PROVIDER",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 1
+                    clientId: "STORE_PROVIDER",
+                    groupId: `${config.kafka.groupId}_STORE_PROVIDER`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         }
@@ -27,7 +28,7 @@ module.exports = {
         {
             name: "store.pg.providers",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "store-pg-providers.js",
             inputs: [
                 {

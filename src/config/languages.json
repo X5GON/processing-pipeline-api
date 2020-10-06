@@ -1,0 +1,13 @@
+[
+    { "fullname": "Catalan",    "alpha2": "ca", "alpha3": "cat" },
+    { "fullname": "Croatian",   "alpha2": "hr", "alpha3": "hrv" },
+    { "fullname": "English",    "alpha2": "en", "alpha3": "eng" },
+    { "fullname": "French",     "alpha2": "fr", "alpha3": "fra" },
+    { "fullname": "German",     "alpha2": "de", "alpha3": "deu" },
+    { "fullname": "Portuguese", "alpha2": "pt", "alpha3": "por" },
+    { "fullname": "Serbian",    "alpha2": "sr", "alpha3": "srp" },
+    { "fullname": "Slovene",    "alpha2": "sl", "alpha3": "slv" },
+    { "fullname": "Spanish",    "alpha2": "es", "alpha3": "spa" },
+    { "fullname": "Swahili",    "alpha2": "sw", "alpha3": "swa" },
+    { "fullname": "Swedish",    "alpha2": "sv", "alpha3": "swe" }
+]

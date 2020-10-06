@@ -12,15 +12,16 @@ module.exports = {
         {
             name: "kafka.material.complete",
             type: "inproc",
-            working_dir: "./pipelines/spouts",
+            working_dir: "./components/spouts",
             cmd: "kafka-spout.js",
             init: {
                 kafka: {
                     host: config.kafka.host,
                     topic: "STORE_MATERIAL_COMPLETE",
-                    groupId: config.kafka.groupId,
-                    high_water: 10,
-                    low_water: 1
+                    clientId: "STORE_MATERIAL_COMPLETE",
+                    groupId: `${config.kafka.groupId}_STORE_MATERIAL_COMPLETE`,
+                    high_water: 100,
+                    low_water: 10
                 }
             }
         }
@@ -29,7 +30,7 @@ module.exports = {
         {
             name: "store.pg.material.complete",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "store-pg-material-complete.js",
             inputs: [
                 {
@@ -48,7 +49,7 @@ module.exports = {
                 {
                     name: "log.material.process.stored",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
@@ -74,7 +75,7 @@ module.exports = {
         {
             name: "store.pg.material.elasticsearch",
             type: "inproc",
-            working_dir: "./pipelines/bolts",
+            working_dir: "./components/bolts",
             cmd: "es-material-new.js",
             inputs: [
                 {
@@ -96,7 +97,7 @@ module.exports = {
                 {
                     name: "log.material.process.complete.finished",
                     type: "inproc",
-                    working_dir: "./pipelines/bolts",
+                    working_dir: "./components/bolts",
                     cmd: "message-postgresql.js",
                     inputs: [
                         {
