@@ -14,8 +14,8 @@ import PostgreSQL from "../../library/postgresQL";
 class MessagePostgreSQL extends BasicBolt {
 
     private _pg: PostgreSQL;
-    // private _postgresTable: string;
-    // private _postgresMethod: string;
+    private _postgresTable: string;
+    private _postgresMethod: string;
     private _postgresPrimaryId: string;
     private _messagePrimaryId: string;
 
@@ -42,10 +42,10 @@ class MessagePostgreSQL extends BasicBolt {
         this._prefix = `[StorePostgreSQL ${this._name}]`;
 
         // create the postgres connection
-        // this._pg = new PostgreSQL(config.pg);
+        this._pg = new PostgreSQL(config.pg);
 
-        // this._postgresTable = config.postgres_table;
-        // this._postgresMethod = config.postgres_method || "update";
+        this._postgresTable = config.postgres_table;
+        this._postgresMethod = config.postgres_method || "update";
         this._postgresPrimaryId = config.postgres_primary_id;
         this._messagePrimaryId = config.message_primary_id;
 
@@ -64,8 +64,10 @@ class MessagePostgreSQL extends BasicBolt {
     }
 
     async shutdown() {
-        // prepare for graceful shutdown, e.g. save state
-        await this._pg.close();
+        if (this._pg) {
+            // prepare for graceful shutdown, e.g. save state
+            await this._pg.close();
+        }
     }
 
     async receive(message: any, stream_id: string) {
@@ -74,9 +76,9 @@ class MessagePostgreSQL extends BasicBolt {
         // PREPARE THE UPDATE AND PRIMARY ATTRS
         // /////////////////////////////////////////
 
-        // const primaryAttrs = {
-        //     [this._postgresPrimaryId]: this.get(message, this._messagePrimaryId)
-        // };
+        const primaryAttrs = {
+            [this._postgresPrimaryId]: this.get(message, this._messagePrimaryId)
+        };
 
         // add the primary key to the update attributes (required to update the records)
         const updateAttrs = {
@@ -111,7 +113,7 @@ class MessagePostgreSQL extends BasicBolt {
         // update the record attributes with the given attributes
         let streamID = stream_id;
         try {
-            // await this._pg[this._postgresMethod](updateAttrs, primaryAttrs, this._postgresTable);
+            await this._pg[this._postgresMethod](updateAttrs, primaryAttrs, this._postgresTable);
         } catch (error) {
             // update the message with the error
             this.set(message, this._documentErrorPath, error.message);
