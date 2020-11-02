@@ -18,7 +18,24 @@ module.exports = {
             init: {
                 pg: config.pg,
                 sql_statement: `
-                    WITH URLS AS (
+                    WITH CURRENT_PROCESS AS (
+                        SELECT
+                        50 - (
+                            SELECT COUNT(*)
+                            FROM material_update_queue
+                            WHERE end_process_time IS NULL
+                        ) AS total
+                    ),
+
+                    CURRENT_PROCESS_QUOTA AS (
+                        SELECT
+                            CASE WHEN total < 0 THEN 0
+                            ELSE total
+                            END
+                        FROM CURRENT_PROCESS
+                    ),
+
+                    URLS AS (
                         SELECT
                         COALESCE(m.material_id, c.material_id) AS material_id,
                         COALESCE(m.provider_id, c.provider_id) AS provider_id,
@@ -70,7 +87,7 @@ module.exports = {
                     )
                     AND material_id NOT IN (SELECT material_id FROM material_update_queue)
                     ORDER BY u_count DESC
-                    LIMIT 50;
+                    LIMIT (SELECT total FROM CURRENT_PROCESS_QUOTA);
                 `, // TODO: add the SQL statement for checking if the material is already in the queue
                 // repeat every one day
                 time_interval: 2 * 60 * 60 * 1000
