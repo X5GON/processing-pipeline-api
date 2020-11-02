@@ -4,13 +4,14 @@ export interface IGenericJSON { [key: string]: any; }
 export type IGenericExecFunc = (value?: any) => any;
 export type IGenericCallbackFunc = (error: Error, value?: any) => any;
 
-export interface IProcessMaterial {
+export interface IMessage {
     title: string;
     description?: string;
     provider_uri: string;
     material_url: string;
     author?: string;
     language: string;
+    language_detected: string[];
     creation_date?: string;
     retrieved_date: string;
     type: string;
@@ -252,6 +253,21 @@ export interface IDocTypeBoltConfig {
     document_error_path?: string;
 }
 
+
+///////////////////////////////////////
+// Language Detection Bolt
+///////////////////////////////////////
+
+export interface ILangDetectBoltConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    document_text_path: string;
+    document_lang_detect_path: string;
+    lang_detect_service_metadata: {
+        url: string;
+    }
+    document_error_path?: string;
+}
+
 ///////////////////////////////////////
 // OCR Bolt
 ///////////////////////////////////////
@@ -291,7 +307,22 @@ export interface IPdfBoltConfig {
 }
 
 ///////////////////////////////////////
-// Extract Text Raw
+// PDF Bolt
+///////////////////////////////////////
+
+export interface IPdfBoltConfig {
+    onEmit?: qtolopology.BoltEmitCallbackAsync;
+    document_location_path: string;
+    document_pdf_path: string;
+    document_error_path?: string;
+    document_location_type?: string;
+    pdf_extract_metadata?: IPdfMetadata[];
+    pdf_trim_text?: boolean;
+    convert_to_pdf?: boolean;
+}
+
+///////////////////////////////////////
+// Text Bolt
 ///////////////////////////////////////
 
 export interface ITextractConfiguration {
@@ -300,7 +331,7 @@ export interface ITextractConfiguration {
     includeAltText?: boolean;
 }
 
-export interface IExtractTextRawConfig {
+export interface ITextBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     document_location_path: string;
     document_text_path: string;
@@ -314,7 +345,7 @@ export interface IExtractTextRawConfig {
 }
 
 ///////////////////////////////////////
-// Extract Text TTP
+// Text and Video TTP Bolt
 ///////////////////////////////////////
 
 export interface ITTPLanguageText {
@@ -336,7 +367,7 @@ export interface ITTPIngestNewResponse {
     id: string;
 }
 
-export interface IExtractTextTTPConfig {
+export interface ITextTTPBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     ttp: {
         user: string;
@@ -357,7 +388,7 @@ export interface IExtractTextTTPConfig {
     ttp_id_path: string;
 }
 
-export interface IExtractVideoTTPConfig {
+export interface IVideoTTPBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     ttp: {
         user: string;
@@ -392,10 +423,10 @@ export interface IExtractTTPStatus {
 }
 
 ///////////////////////////////////////
-// Get Material Contents
+// Message Content Bolt
 ///////////////////////////////////////
 
-export interface IGetMaterialContentConfig {
+export interface IMsgContentBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     document_text_path: string;
     document_error_path: string;
@@ -413,7 +444,7 @@ export interface IGetMaterialContentConfig {
 }
 
 ///////////////////////////////////////
-// Extract Wikipedia
+// Wikipedia Bolt
 ///////////////////////////////////////
 
 export interface IExtractWikipediaConfig {
@@ -429,12 +460,12 @@ export interface IExtractWikipediaConfig {
 }
 
 ///////////////////////////////////////
-// Message Forward Kafka
+// Kafka Bolt
 ///////////////////////////////////////
 
-export type IFormatMessage = (message: IProcessMaterial) => IGenericJSON;
+export type IFormatMessage = (message: IMessage) => IGenericJSON;
 
-export interface IMessageForwardKafka {
+export interface IKafkaBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     kafka: {
         host: string;
@@ -445,10 +476,10 @@ export interface IMessageForwardKafka {
 }
 
 ///////////////////////////////////////
-// Message Logging
+// Message Logging Bolt
 ///////////////////////////////////////
 
-export interface IMessageLoggingConfig {
+export interface IMsgLoggingBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     logging: {
         file_name: string;
@@ -461,10 +492,10 @@ export interface IMessageLoggingConfig {
 }
 
 ///////////////////////////////////////
-// Message PostgreSQL
+// PG Logging Bolt
 ///////////////////////////////////////
 
-export interface IMessagePostgreSQLConfig {
+export interface IPGLoggingBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     pg: {
         host: string;
@@ -489,17 +520,17 @@ export interface IMessagePostgreSQLConfig {
 }
 
 ///////////////////////////////////////
-// Message Validate
+// Validate Bolt
 ///////////////////////////////////////
 
-export interface IMessageValidateConfig {
+export interface IValidateBoltConfig {
     onEmit?: qtolopology.BoltEmitCallbackAsync;
     json_schema: jsonschema.Schema;
     document_error_path?: string;
 }
 
 ///////////////////////////////////////
-// Store XXXXXXXXXXX
+// Store Connection Bolts
 ///////////////////////////////////////
 
 export interface IStoreConfig {

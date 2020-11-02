@@ -2,7 +2,7 @@
 import * as Interfaces from "../../Interfaces";
 
 // formats completed materials
-export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
+export function formatMaterialComplete (material: Interfaces.IMessage) {
     // split the material into pieces and send the data in the correct order
     const {
         title,
@@ -11,6 +11,7 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
         material_url,
         author,
         language: origin_language,
+        language_detected,
         creation_date,
         retrieved_date,
         type,
@@ -105,6 +106,7 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
             title,
             description,
             language: origin_language,
+            language_detected,
             authors: authors_copy,
             creation_date,
             retrieved_date,
@@ -125,7 +127,7 @@ export function formatMaterialComplete (material: Interfaces.IProcessMaterial) {
 }
 
 // formats partial materials
-export function formatMaterialPartial (material: Interfaces.IProcessMaterial) {
+export function formatMaterialPartial (material: Interfaces.IMessage) {
     // rebrand the attribute name
     let authorList: string[];
     if (material.author) {

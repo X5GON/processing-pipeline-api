@@ -28,6 +28,16 @@
             "minLength": 2,
             "maxLength": 2
         },
+        "language_detected": {
+            "description": "The detected language of the OER material using UCl-developed language detection service",
+            "type": "array",
+            "items": {
+                "description": "The ISO 639-1 language code",
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 2
+            }
+        },
         "creation_date": {
             "description": "The date when the OER material was created",
             "type": "string"
@@ -106,6 +116,7 @@
         "provider_uri",
         "material_url",
         "language",
+        "language_detected",
         "type",
         "mimetype",
         "material_metadata"

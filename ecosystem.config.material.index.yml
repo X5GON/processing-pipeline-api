@@ -15,7 +15,7 @@ apps:
   - script: "pipeline.js"
     name: "x5process_text_indexing"
     cwd: "./dist/"
-    args: "-tn uuid.process.material.text.indexing -tp ../ontologies/process.material.text.indexing"
+    args: "-tn uuid.index-material-text -tp ../ontologies/index-material-text"
     instances: 3,
     exec_mode: "cluster"
     autorestart: true
@@ -29,7 +29,7 @@ apps:
   - script: "pipeline.js"
     name: "x5process_text_translation"
     cwd: "./dist/"
-    args: "-tn uuid.process.material.text.translation -tp ../ontologies/process.material.text.translation"
+    args: "-tn uuid.index-material-text-translate -tp ../ontologies/index-material-text-translate"
     instances: 3,
     exec_mode: "cluster"
     autorestart: true
@@ -43,7 +43,7 @@ apps:
   - script: "pipeline.js"
     name: "x5process_video_translation"
     cwd: "./dist/"
-    args: "-tn uuid.process.material.video.translation -tp ../ontologies/process.material.video.translation"
+    args: "-tn uuid.index-material-video-translate -tp ../ontologies/index-material-video-translate"
     instances: 3,
     exec_mode: "cluster"
     autorestart: true
@@ -57,7 +57,7 @@ apps:
   - script: "pipeline.js"
     name: "x5store_process_material_complete"
     cwd: "./dist/"
-    args: "-tn uuid.store.material.complete -tp ../ontologies/store.material.complete"
+    args: "-tn uuid.store-index-complete -tp ../ontologies/store-index-complete"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
@@ -71,7 +71,7 @@ apps:
   - script: "pipeline.js"
     name: "x5store_process_material_incomplete"
     cwd: "./dist/"
-    args: "-tn uuid.store.material.incomplete -tp ../ontologies/store.material.incomplete"
+    args: "-tn uuid.store-index-incomplete -tp ../ontologies/store-index-incomplete"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
