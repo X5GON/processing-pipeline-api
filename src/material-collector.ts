@@ -51,8 +51,8 @@ class MaterialCollector {
 
         this._producer = new KafkaProducer("material-collector", params.kafka.host);
         // define kafka topic names
-        this._textTopic = "PREPROC_MATERIAL_TEXT";
-        this._videoTopic = "PREPROC_MATERIAL_VIDEO";
+        this._textTopic = "PREPROC_MATERIAL_TEXT_TRANSLATION";
+        this._videoTopic = "PREPROC_MATERIAL_VIDEO_TRANSLATION";
 
         // initialize retriever list
         this._apis = [];
