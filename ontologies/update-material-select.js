@@ -20,7 +20,7 @@ module.exports = {
                 sql_statement: `
                     WITH CURRENT_PROCESS AS (
                         SELECT
-                        50 - (
+                        20 - (
                             SELECT COUNT(*)
                             FROM material_update_queue
                             WHERE end_process_time IS NULL
