@@ -55,7 +55,7 @@ module.exports = {
               },
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][0/5] material update started -> retrieving the stored material content",
+                  "[TEXT][0/5] material update started -> retrieving stored material content",
               },
               document_error_path: "message",
             },
@@ -101,7 +101,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][1/5] existing material content extracted -> extracting the raw material content",
+                  "[TEXT][1/5] existing material content extracted -> extracting material content",
               },
               document_error_path: "message",
             },
@@ -225,6 +225,7 @@ module.exports = {
         document_location_type: "remote",
         document_language_path: "language",
         document_ocr_path: "material_metadata.raw_text",
+        ocr_verbose: true,
         temporary_folder: "../tmp",
       },
     },
@@ -259,7 +260,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][2/5] material content extracted -> retrieving translations",
+                  "[TEXT][2/5] material content extracted -> detecting language",
               },
               document_error_path: "message",
             },
@@ -275,19 +276,19 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.process.extract.text.raw"
+            ? "log.material.update.extract.text.raw"
             : "extract.text.raw",
           stream_id: "doc",
         },
         {
           source: productionMode
-            ? "log.material.process.extract.text.raw"
+            ? "log.material.update.extract.text.raw"
             : "pdf-router",
           stream_id: "pdf",
         },
         {
           source: productionMode
-            ? "log.material.process.extract.text.raw"
+            ? "log.material.update.extract.text.raw"
             : "doc-ocr",
           stream_id: "ocr",
         },
@@ -296,8 +297,7 @@ module.exports = {
         document_text_path: "material_metadata.raw_text",
         document_lang_detect_path: "language_detected",
         lang_detect_service_metadata: config.languageDetection,
-        document_text_path: "material_metadata.raw_text",
-        document_error_path: "message",
+        document_error_path: "message"
       },
     },
 
@@ -347,19 +347,19 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.process.language.detection"
+            ? "log.material.update.language.detection"
             : "language.detection",
           stream_id: "doc"
         },
         {
           source: productionMode
-            ? "log.material.process.language.detection"
+            ? "log.material.update.language.detection"
             : "language.detection",
           stream_id: "pdf"
         },
         {
           source: productionMode
-            ? "log.material.process.language.detection"
+            ? "log.material.update.language.detection"
             : "language.detection",
           stream_id: "ocr"
         },
@@ -409,7 +409,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][4/5] material translations extracted -> retrieving wikipedia concepts",
+                  "[TEXT][4/5] translations retrieved -> wikifying material",
               },
               document_error_path: "message",
             },
@@ -425,19 +425,19 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.process.extract.text.ttp"
+            ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
           stream_id: "doc"
         },
         {
           source: productionMode
-            ? "log.material.process.extract.text.ttp"
+            ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
           stream_id: "pdf"
         },
         {
           source: productionMode
-            ? "log.material.process.extract.text.ttp"
+            ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
           stream_id: "ocr"
         },
@@ -484,7 +484,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][5/5] material wikipedia extracted -> updating the material",
+                  "[TEXT][5/5] material wikified -> updating the material",
               },
               document_error_path: "message",
             },
@@ -505,19 +505,19 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.process.extract.wikipedia"
+            ? "log.material.update.extract.wikipedia"
             : "extract.wikipedia",
           stream_id: "doc",
         },
         {
           source: productionMode
-            ? "log.material.process.extract.wikipedia"
+            ? "log.material.update.extract.wikipedia"
             : "extract.wikipedia",
           stream_id: "pdf",
         },
         {
           source: productionMode
-            ? "log.material.process.extract.wikipedia"
+            ? "log.material.update.extract.wikipedia"
             : "extract.wikipedia",
           stream_id: "ocr",
         },

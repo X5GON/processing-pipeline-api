@@ -57,7 +57,7 @@ module.exports = {
               },
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][0/6] material processing started -> transforming format",
+                  "[TEXT][0/6] material processing started -> retrieving document type",
               },
               document_error_path: "message",
             },
@@ -105,7 +105,7 @@ module.exports = {
               },
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][1/6] document type detected -> transforming format",
+                  "[TEXT][1/6] document type retrieved -> transforming format",
               },
               document_error_path: "message",
             },
@@ -165,7 +165,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][2/6] material object schema transformed -> extracting raw material content",
+                  "[TEXT][2/6] material object schema transformed -> extracting material content",
               },
               document_error_path: "message",
             },
@@ -323,7 +323,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][3/6] material content extracted -> retrieving wikipedia concepts",
+                  "[TEXT][3/6] material content extracted -> detecting language",
               },
               document_error_path: "message",
             },
@@ -394,7 +394,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][4/6] language detected -> retrieving translations",
+                  "[TEXT][4/6] language detected -> wikifying material",
               },
               document_error_path: "message",
             },
