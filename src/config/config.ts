@@ -39,7 +39,7 @@ const common = {
         token: process.env.PREPROC_TTP_TOKEN
     },
     languageDetection: {
-        url: "http://192.168.1.16/language_detection"
+        url: "http://192.168.1.16:6005/language_detection"
     }
 };
 
