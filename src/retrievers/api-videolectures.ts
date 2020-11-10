@@ -10,7 +10,7 @@ import PostgreSQL from "../library/postgresQL";
 
 // modules
 import RestBasic from "./api-rest-basic";
-import * as bent from "bent";
+import got from "got";
 
 export default class VideolecturesAPI extends RestBasic {
 
@@ -19,7 +19,6 @@ export default class VideolecturesAPI extends RestBasic {
     private _token: string;
 
     private _pg: PostgreSQL;
-    private _getRequest: bent.RequestFunction<any>;
 
     constructor(args: Interfaces.IConfigRetriever) {
         super();
@@ -28,8 +27,6 @@ export default class VideolecturesAPI extends RestBasic {
         this._apikey = args.apikey;
         this._token = args.token;
         this._pg = args.pg;
-        // prepare the GET request object
-        this._getRequest = bent(this._domain, "GET", "json", 200);
     }
 
 
@@ -42,28 +39,29 @@ export default class VideolecturesAPI extends RestBasic {
         // extract the slug from the full material provider
         const slug = url.split("/")[3];
         // setup the url to get the videolectures metadata
-        const lecture = await this._getRequest(`/site/api/lectures?apikey=${this._apikey}&slug=${slug}`);
-
+        const response = await got(`${this._domain}/site/api/lectures?apikey=${this._apikey}&slug=${slug}`);
+        const lecture: any = response.body;
         if (!lecture || (!lecture.results && !lecture.results[0])) {
-            throw new Error(`[API-Videolectures get] lecture not found for url=${url}`);
+            throw new Error(`[VideolecturesAPI.getMaterial] lecture not found for url=${url}`);
         }
 
         const materialRequests = [];
 
         const materials = lecture.results[0];
         for (const video of materials.videos) {
-            const videoURL = `/site/api/videos/${video.id}?apikey=${this._apikey}`;
-            materialRequests.push(this._getRequest(videoURL));
+            const videoURL = `${this._domain}/site/api/videos/${video.id}?apikey=${this._apikey}`;
+            materialRequests.push(got(videoURL));
         }
             // return the material requests
         const contents = await Promise.all(materialRequests);
         if (!contents) {
-            throw new Error(`[API-Videolectures get] no content found for url=${url}`);
+            throw new Error(`[VideolecturesAPI.getMaterial] no content found for url=${url}`);
         }
 
         // create a container for oer materials
         const oerList = [];
-        for (const attachments of contents) {
+        for (let attachments of contents) {
+            attachments = attachments.body;
             for (const file of attachments.attachments) {
                 const display = file.type_display;
                 if (display && (display.includes("Slide Presentation") || display.includes("generic video source"))) {
