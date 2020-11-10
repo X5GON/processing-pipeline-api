@@ -5,6 +5,9 @@ const formatMessages = require("../dist/components/utils/format-materials");
 
 const productionMode = config.isProduction;
 
+// supported types
+typeRouterPDF = ["pdf", "docx", "doc", "pptx", "ppt"];
+
 // topology definition
 module.exports = {
   general: {
@@ -54,14 +57,61 @@ module.exports = {
               },
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][0/6] material processing started -> transforming format",
+                  "[TEXT][0/7] material processing started -> transforming format",
               },
               document_error_path: "message",
             },
           },
         ]
       : []),
-
+      {
+        name: "doc-type",
+        type: "inproc",
+        working_dir: "./components/bolts",
+        cmd: "doc_type_bolt.js",
+        inputs: [
+          {
+            source: productionMode
+              ? "log.material.process.started"
+              : "input.kafka.text",
+          },
+        ],
+        init: {
+          document_location_path: "material_url",
+          document_type_path: "type",
+        },
+      },
+      // LOGGING STATE OF MATERIAL PROCESS
+      ...(productionMode
+        ? [
+            {
+              name: "log.material.process.doc.type",
+              type: "inproc",
+              working_dir: "./components/bolts",
+              cmd: "pg_logging_bolt.js",
+              inputs: [
+                {
+                  source: "doc-type",
+                },
+              ],
+              init: {
+                pg: config.pg,
+                postgres_table: "material_process_queue",
+                postgres_primary_id: "material_url",
+                message_primary_id: "material_url",
+                postgres_method: "update",
+                postgres_time_attrs: {
+                  start_process_time: true,
+                },
+                postgres_literal_attrs: {
+                  status:
+                    "[TEXT][1/7] document type detected -> transforming format",
+                },
+                document_error_path: "message",
+              },
+            },
+          ]
+        : []),
     {
       name: "transform.material",
       working_dir: ".",
@@ -69,9 +119,7 @@ module.exports = {
       cmd: "transform",
       inputs: [
         {
-          source: productionMode
-            ? "log.material.process.started"
-            : "input.kafka.text",
+          source: productionMode ? "log.material.process.doc.type" : "doc-type",
         },
       ],
       init: {
@@ -118,7 +166,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][1/6] material object schema transformed -> extracting raw material content",
+                  "[TEXT][2/7] material object schema transformed -> extracting raw material content",
               },
               document_error_path: "message",
             },
@@ -126,30 +174,125 @@ module.exports = {
         ]
       : []),
 
-    {
-      name: "extract.text.raw",
-      type: "inproc",
-      working_dir: "./components/bolts",
-      cmd: "text_bolt.js",
-      inputs: [
-        {
-          source: productionMode
-            ? "log.material.process.formatting"
-            : "transform.material",
+      {
+        name: "type-router",
+        type: "sys",
+        working_dir: ".",
+        cmd: "router",
+        inputs: [
+          {
+            source: productionMode
+              ? "log.material.process.formatting"
+              : "transform.material",
+          },
+        ],
+        init: {
+          routes: {
+            pdf: {
+              type: typeRouterPDF,
+            },
+            doc: {
+              type: {
+                $like: `^(?!${typeRouterPDF.join("|")}).*$`,
+              },
+            },
+          },
         },
-      ],
-      init: {
-        textract_config: {
-          preserve_line_breaks: true,
-          preserve_only_multiple_line_breaks: false,
-          include_alt_text: true,
-        },
-        document_location_path: "material_url",
-        document_location_type: "remote",
-        document_text_path: "material_metadata.raw_text",
-        document_error_path: "message",
       },
-    },
+
+      {
+        name: "extract.text.raw",
+        type: "inproc",
+        working_dir: "./components/bolts",
+        cmd: "text_bolt.js",
+        inputs: [
+          {
+            source: "type-router",
+            stream_id: "doc",
+          },
+        ],
+        init: {
+          textract_config: {
+            preserve_line_breaks: true,
+            preserve_only_multiple_line_breaks: false,
+            include_alt_text: true,
+          },
+          document_location_path: "material_url",
+          document_location_type: "remote",
+          document_text_path: "material_metadata.raw_text",
+          document_error_path: "message",
+        },
+      },
+
+      {
+        name: "doc-pdf",
+        type: "inproc",
+        working_dir: "./components/bolts",
+        cmd: "pdf_bolt.js",
+        inputs: [
+          {
+            source: "type-router",
+            stream_id: "pdf",
+          },
+        ],
+        init: {
+          document_location_path: "material_url",
+          document_location_type: "remote",
+          document_pdf_path: "material_metadata",
+          pdf_extract_metadata: [
+            { attribute: "pages", location: "pages" },
+            { attribute: "meta", location: "meta" },
+            { attribute: "text", location: "raw_text" },
+          ],
+          pdf_trim_text: true,
+          convert_to_pdf: true,
+        },
+      },
+      {
+        name: "pdf-router",
+        type: "sys",
+        working_dir: ".",
+        cmd: "router",
+        inputs: [
+          {
+            source: "doc-pdf",
+            stream_id: "pdf",
+          },
+        ],
+        init: {
+          routes: {
+            pdf: {
+              "material_metadata.raw_text": {
+                $like: "(?!^$)([^s])",
+              },
+            },
+            ocr: {
+              "material_metadata.raw_text": {
+                $like: "^$|^s*$",
+              },
+            },
+          },
+        },
+      },
+      {
+        name: "doc-ocr",
+        type: "inproc",
+        working_dir: "./components/bolts",
+        cmd: "ocr_bolt.js",
+        inputs: [
+          {
+            source: "pdf-router",
+            stream_id: "ocr",
+          },
+        ],
+        init: {
+          document_location_path: "material_url",
+          document_location_type: "remote",
+          document_language_path: "language",
+          document_ocr_path: "material_metadata.raw_text",
+          temporary_folder: "../tmp",
+        },
+      },
 
     // LOGGING STATE OF MATERIAL PROCESS
     ...(productionMode
@@ -162,6 +305,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.raw",
+                stream_id: "doc",
+              },
+              {
+                source: "pdf-router",
+                stream_id: "pdf",
+              },
+              {
+                source: "doc-ocr",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -172,7 +324,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][2/6] material content extracted -> retrieving translations",
+                  "[TEXT][3/7] material content extracted -> retrieving translations",
               },
               document_error_path: "message",
             },
@@ -190,6 +342,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.extract.text.raw"
             : "extract.text.raw",
+          stream_id: "doc",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.raw"
+            : "pdf-router",
+          stream_id: "pdf",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.raw"
+            : "doc-ocr",
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -212,6 +377,15 @@ module.exports = {
             inputs: [
               {
                 source: "language.detection",
+                stream_id: "doc",
+              },
+              {
+                source: "language.detection",
+                stream_id: "pdf",
+              },
+              {
+                source: "language.detection",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -222,7 +396,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][3/6] language detected -> retrieving translations",
+                  "[TEXT][4/7] language detected -> retrieving translations",
               },
               document_error_path: "message",
             },
@@ -240,6 +414,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.language.detection"
             : "language.detection",
+          stream_id: "doc"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.language.detection"
+            : "language.detection",
+          stream_id: "pdf"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.language.detection"
+            : "language.detection",
+          stream_id: "ocr"
         },
       ],
       init: {
@@ -268,6 +455,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.ttp",
+                stream_id: "doc"
+              },
+              {
+                source: "extract.text.ttp",
+                stream_id: "pdf"
+              },
+              {
+                source: "extract.text.ttp",
+                stream_id: "ocr"
               },
             ],
             init: {
@@ -278,7 +474,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][4/6] material translations retrieved -> retrieving wikipedia concepts",
+                  "[TEXT][5/7] material translations retrieved -> retrieving wikipedia concepts",
               },
               document_error_path: "message",
             },
@@ -296,6 +492,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.extract.text.ttp"
             : "extract.text.ttp",
+          stream_id: "doc"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.ttp"
+            : "extract.text.ttp",
+          stream_id: "pdf"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.ttp"
+            : "extract.text.ttp",
+          stream_id: "ocr"
         },
       ],
       init: {
@@ -321,6 +530,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.wikipedia",
+                stream_id: "doc",
+              },
+              {
+                source: "extract.wikipedia",
+                stream_id: "pdf",
+              },
+              {
+                source: "extract.wikipedia",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -330,7 +548,7 @@ module.exports = {
               message_primary_id: "material_url",
               postgres_method: "update",
               postgres_literal_attrs: {
-                status: "[TEXT][5/6] material wikified -> Validating material",
+                status: "[TEXT][6/7] material wikified -> Validating material",
               },
               document_error_path: "message",
             },
@@ -348,6 +566,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.extract.wikipedia"
             : "extract.wikipedia",
+          stream_id: "doc",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.wikipedia"
+            : "extract.wikipedia",
+          stream_id: "pdf",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.wikipedia"
+            : "extract.wikipedia",
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -367,6 +598,15 @@ module.exports = {
             inputs: [
               {
                 source: "message.validate",
+                stream_id: "doc",
+              },
+              {
+                source: "message.validate",
+                stream_id: "pdf",
+              },
+              {
+                source: "message.validate",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -377,7 +617,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][6/6] material validated -> storing the material",
+                  "[TEXT][7/7] material validated -> storing the material",
               },
               document_error_path: "message",
             },
@@ -400,6 +640,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.message.validate"
             : "message.validate",
+          stream_id: "doc",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.message.validate"
+            : "message.validate",
+          stream_id: "pdf",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.message.validate"
+            : "message.validate",
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -426,6 +679,10 @@ module.exports = {
               },
             ]
           : []),
+          {
+            source: "doc-type",
+            stream_id: "stream_error",
+          },
         ...(productionMode
           ? [
               {
@@ -436,6 +693,14 @@ module.exports = {
           : []),
         {
           source: "extract.text.raw",
+          stream_id: "stream_error",
+        },
+        {
+          source: "doc-pdf",
+          stream_id: "stream_error",
+        },
+        {
+          source: "doc-ocr",
           stream_id: "stream_error",
         },
         ...(productionMode

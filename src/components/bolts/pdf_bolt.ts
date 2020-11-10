@@ -15,7 +15,7 @@ class PdfBolt extends BasicBolt {
     private _documentLocationType: string;
     private _documentPdfPath: string;
     private _documentErrorPath: string;
-    private _PDFextractMetadata: INT.IPdfMetadata[];
+    private _PDFextractMetadata: { "attribute": INT.IPdfMetadata, "location": string }[];
     private _convertToPDF: boolean;
     private _PDFtrimText: boolean;
 
@@ -43,10 +43,10 @@ class PdfBolt extends BasicBolt {
         this._documentErrorPath = config.document_error_path || "error";
         // the extraction types
         this._PDFextractMetadata = config.pdf_extract_metadata || [
-            INT.IPdfMetadata.PAGES,
-            INT.IPdfMetadata.INFO,
-            INT.IPdfMetadata.METADATA,
-            INT.IPdfMetadata.TEXT
+            { attribute: INT.IPdfMetadata.PAGES, location: "pages" },
+            { attribute: INT.IPdfMetadata.INFO, location: "info" },
+            { attribute: INT.IPdfMetadata.METADATA, location: "metadata" },
+            { attribute: INT.IPdfMetadata.TEXT, location: "text" }
         ];
         // the trim PDF text
         this._PDFtrimText = config.pdf_trim_text || false;
@@ -87,18 +87,18 @@ class PdfBolt extends BasicBolt {
 
             const metadata = {};
             for (const type of this._PDFextractMetadata) {
-                switch (type) {
+                switch (type.attribute) {
                 case INT.IPdfMetadata.PAGES:
-                    metadata[type] = pdfMeta.numpages;
+                    metadata[type.location] = pdfMeta.numpages;
                     break;
                 case INT.IPdfMetadata.INFO:
-                    metadata[type] = pdfMeta.info;
+                    metadata[type.location] = pdfMeta.info;
                     break;
                 case INT.IPdfMetadata.METADATA:
-                    metadata[type] = pdfMeta.metadata;
+                    metadata[type.location] = pdfMeta.metadata;
                     break;
                 case INT.IPdfMetadata.TEXT:
-                    metadata[type] = this._PDFtrimText
+                    metadata[type.location] = this._PDFtrimText
                         ? pdfMeta.text.trim()
                         : pdfMeta.text;
                     break;

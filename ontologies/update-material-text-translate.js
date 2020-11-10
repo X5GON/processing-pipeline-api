@@ -3,6 +3,9 @@ const { default: config } = require("../dist/config/config");
 
 const productionMode = config.isProduction;
 
+// supported types
+typeRouterPDF = ["pdf", "docx", "doc", "pptx", "ppt"];
+
 // topology definition
 module.exports = {
   general: {
@@ -107,15 +110,40 @@ module.exports = {
       : []),
 
     {
+      name: "type-router",
+      type: "sys",
+      working_dir: ".",
+      cmd: "router",
+      inputs: [
+        {
+          source: productionMode
+            ? "log.material.update.get.material.content"
+            : "get.material.content",
+        },
+      ],
+      init: {
+        routes: {
+          pdf: {
+            type: typeRouterPDF,
+          },
+          doc: {
+            type: {
+              $like: `^(?!${typeRouterPDF.join("|")}).*$`,
+            },
+          },
+        },
+      },
+    },
+
+    {
       name: "extract.text.raw",
       type: "inproc",
       working_dir: "./components/bolts",
       cmd: "text_bolt.js",
       inputs: [
         {
-          source: productionMode
-            ? "log.material.update.get.material.content"
-            : "get.material.content",
+          source: "type-router",
+          stream_id: "doc",
         },
       ],
       init: {
@@ -131,6 +159,76 @@ module.exports = {
       },
     },
 
+    {
+      name: "doc-pdf",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "pdf_bolt.js",
+      inputs: [
+        {
+          source: "type-router",
+          stream_id: "pdf",
+        },
+      ],
+      init: {
+        document_location_path: "material_url",
+        document_location_type: "remote",
+        document_pdf_path: "material_metadata",
+        pdf_extract_metadata: [
+          { attribute: "pages", location: "pages" },
+          { attribute: "meta", location: "meta" },
+          { attribute: "text", location: "raw_text" },
+        ],
+        pdf_trim_text: true,
+        convert_to_pdf: true,
+      },
+    },
+    {
+      name: "pdf-router",
+      type: "sys",
+      working_dir: ".",
+      cmd: "router",
+      inputs: [
+        {
+          source: "doc-pdf",
+          stream_id: "pdf",
+        },
+      ],
+      init: {
+        routes: {
+          pdf: {
+            "material_metadata.raw_text": {
+              $like: "(?!^$)([^s])",
+            },
+          },
+          ocr: {
+            "material_metadata.raw_text": {
+              $like: "^$|^s*$",
+            },
+          },
+        },
+      },
+    },
+    {
+      name: "doc-ocr",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "ocr_bolt.js",
+      inputs: [
+        {
+          source: "pdf-router",
+          stream_id: "ocr",
+        },
+      ],
+      init: {
+        document_location_path: "material_url",
+        document_location_type: "remote",
+        document_language_path: "language",
+        document_ocr_path: "material_metadata.raw_text",
+        temporary_folder: "../tmp",
+      },
+    },
+
     // LOGGING STATE OF MATERIAL PROCESS
     ...(productionMode
       ? [
@@ -142,6 +240,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.raw",
+                stream_id: "doc",
+              },
+              {
+                source: "pdf-router",
+                stream_id: "pdf",
+              },
+              {
+                source: "doc-ocr",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -170,6 +277,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.extract.text.raw"
             : "extract.text.raw",
+          stream_id: "doc",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.raw"
+            : "pdf-router",
+          stream_id: "pdf",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.raw"
+            : "doc-ocr",
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -192,6 +312,15 @@ module.exports = {
             inputs: [
               {
                 source: "language.detection",
+                stream_id: "doc",
+              },
+              {
+                source: "language.detection",
+                stream_id: "pdf",
+              },
+              {
+                source: "language.detection",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -218,8 +347,21 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.update.language.detection"
+            ? "log.material.process.language.detection"
             : "language.detection",
+          stream_id: "doc"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.language.detection"
+            : "language.detection",
+          stream_id: "pdf"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.language.detection"
+            : "language.detection",
+          stream_id: "ocr"
         },
       ],
       init: {
@@ -248,6 +390,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.ttp",
+                stream_id: "doc"
+              },
+              {
+                source: "extract.text.ttp",
+                stream_id: "pdf"
+              },
+              {
+                source: "extract.text.ttp",
+                stream_id: "ocr"
               },
             ],
             init: {
@@ -274,8 +425,21 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.update.extract.text.ttp"
+            ? "log.material.process.extract.text.ttp"
             : "extract.text.ttp",
+          stream_id: "doc"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.ttp"
+            : "extract.text.ttp",
+          stream_id: "pdf"
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.text.ttp"
+            : "extract.text.ttp",
+          stream_id: "ocr"
         },
       ],
       init: {
@@ -301,6 +465,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.wikipedia",
+                stream_id: "doc",
+              },
+              {
+                source: "extract.wikipedia",
+                stream_id: "pdf",
+              },
+              {
+                source: "extract.wikipedia",
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -332,8 +505,21 @@ module.exports = {
       inputs: [
         {
           source: productionMode
-            ? "log.material.update.extract.wikipedia"
+            ? "log.material.process.extract.wikipedia"
             : "extract.wikipedia",
+          stream_id: "doc",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.wikipedia"
+            : "extract.wikipedia",
+          stream_id: "pdf",
+        },
+        {
+          source: productionMode
+            ? "log.material.process.extract.wikipedia"
+            : "extract.wikipedia",
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -362,6 +548,10 @@ module.exports = {
                     },
                   ]
                 : []),
+              {
+                source: "get.material.content",
+                stream_id: "stream_error",
+              },
               ...(productionMode
                 ? [
                     {
@@ -372,6 +562,14 @@ module.exports = {
                 : []),
               {
                 source: "extract.text.raw",
+                stream_id: "stream_error",
+              },
+              {
+                source: "doc-pdf",
+                stream_id: "stream_error",
+              },
+              {
+                source: "doc-ocr",
                 stream_id: "stream_error",
               },
               ...(productionMode

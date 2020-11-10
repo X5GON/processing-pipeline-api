@@ -301,22 +301,7 @@ export interface IPdfBoltConfig {
     document_pdf_path: string;
     document_error_path?: string;
     document_location_type?: string;
-    pdf_extract_metadata?: IPdfMetadata[];
-    pdf_trim_text?: boolean;
-    convert_to_pdf?: boolean;
-}
-
-///////////////////////////////////////
-// PDF Bolt
-///////////////////////////////////////
-
-export interface IPdfBoltConfig {
-    onEmit?: qtolopology.BoltEmitCallbackAsync;
-    document_location_path: string;
-    document_pdf_path: string;
-    document_error_path?: string;
-    document_location_type?: string;
-    pdf_extract_metadata?: IPdfMetadata[];
+    pdf_extract_metadata?: { "attribute": IPdfMetadata, "location": string }[];
     pdf_trim_text?: boolean;
     convert_to_pdf?: boolean;
 }
