@@ -55,7 +55,7 @@ module.exports = {
               },
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][0/5] material update started -> retrieving stored material content",
+                  "[TEXT][0/4] material update started -> retrieving stored material content",
               },
               document_error_path: "message",
             },
@@ -101,7 +101,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][1/5] existing material content extracted -> extracting material content",
+                  "[TEXT][1/4] existing material content extracted -> extracting material content",
               },
               document_error_path: "message",
             },
@@ -260,7 +260,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][2/5] material content extracted -> detecting language",
+                  "[TEXT][2/4] material content extracted -> retrieving translations",
               },
               document_error_path: "message",
             },
@@ -338,7 +338,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][4/5] translations retrieved -> wikifying material",
+                  "[TEXT][3/4] translations retrieved -> wikifying material",
               },
               document_error_path: "message",
             },
@@ -413,7 +413,7 @@ module.exports = {
               postgres_method: "update",
               postgres_literal_attrs: {
                 status:
-                  "[TEXT][5/5] material wikified -> updating the material",
+                  "[TEXT][4/4] material wikified -> updating the material",
               },
               document_error_path: "message",
             },
