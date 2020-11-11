@@ -1,8 +1,8 @@
 apps:
   - script: "pipeline.js"
-    name: "x5store_user_activity_connect"
+    name: "x5store_ua_connect"
     cwd: "./dist/"
-    args: "-tn uuid.store-ua-activity -tp ../ontologies/store-ua-activity"
+    args: "-tn uuid.store-ua-activity -tp ../topologies/store-ua-activity"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
@@ -16,7 +16,7 @@ apps:
   - script: "pipeline.js"
     name: "x5store_recsys_selection"
     cwd: "./dist/"
-    args: "-tn uuid.store-recsys-selections -tp ../ontologies/store-recsys-selections"
+    args: "-tn uuid.store-recsys-selections -tp ../topologies/store-recsys-selections"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
@@ -28,9 +28,9 @@ apps:
 
 
   - script: "pipeline.js"
-    name: "x5store_join_providers"
+    name: "x5store_providers"
     cwd: "./dist/"
-    args: "-tn uuid.store-providers -tp ../ontologies/store-providers"
+    args: "-tn uuid.store-providers -tp ../topologies/store-providers"
     instances: 1,
     exec_mode: "fork"
     autorestart: true

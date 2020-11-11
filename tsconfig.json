@@ -19,7 +19,7 @@
         ]
     },
     "include": [
-        "./src/**/*", "ontologies",
+        "./src/**/*", "topologies",
     ],
     "exclude": [
         "./pkgs/**/*"
