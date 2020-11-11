@@ -17,7 +17,7 @@ import * as bent from "bent";
 import * as delay from "delay";
 import * as rp from "request-promise-native";
 import * as fileManager from "../../library/file-manager";
-import { normalizeString } from "../../library/normalization";
+import { normalizeString, cleanupString } from "../../library/normalization";
 import * as querystring from "querystring";
 
 import BasicBolt from "./basic_bolt";
@@ -213,7 +213,7 @@ class TextTTPBolt extends BasicBolt {
                 language: documentLanguage,
                 documents: [{
                     external_id,
-                    title: documentTitle ? normalizeString(documentTitle) : "",
+                    title: documentTitle ? cleanupString(normalizeString(documentTitle)) : "",
                     filename: "material.txt",
                     fileformat: "txt",
                     md5

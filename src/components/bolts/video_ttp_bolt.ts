@@ -11,7 +11,7 @@ import * as INT from "../../Interfaces";
 // modules
 import * as bent from "bent";
 import * as delay from "delay";
-import { normalizeString } from "../../library/normalization";
+import { normalizeString, cleanupString } from "../../library/normalization";
 import * as querystring from "querystring";
 
 import BasicBolt from "./basic_bolt";
@@ -189,16 +189,16 @@ class VideoTTPBolt extends BasicBolt {
             speakers = documentAuthors
                 .split(",")
                 .map((author) => ({
-                    speaker_id: normalizeString(author.trim()),
-                    speaker_name: normalizeString(author.trim())
+                    speaker_id: cleanupString(normalizeString(author.trim())),
+                    speaker_name: cleanupString(normalizeString(author.trim()))
                 }));
         } else if (documentAuthors && typeof documentAuthors === "object") {
             // Expectation: documentAuthors = ['author 1', 'author 2']
             // map the authors into the manifest file
             speakers = documentAuthors
                 .map((author) => ({
-                    speaker_id: normalizeString(author.trim()),
-                    speaker_name: normalizeString(author.trim())
+                    speaker_id: cleanupString(normalizeString(author.trim())),
+                    speaker_name: cleanupString(normalizeString(author.trim()))
                 }));
         } else {
             // there were no authors provided, create an unknown speaker id
@@ -241,7 +241,7 @@ class VideoTTPBolt extends BasicBolt {
                 // external_id equals to material url
                     external_id,
                     language: documentLanguage,
-                    title: normalizeString(documentTitle),
+                    title: cleanupString(normalizeString(documentTitle)),
                     speakers
                 },
                 // transcription and translation languages
