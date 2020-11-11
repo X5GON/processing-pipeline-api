@@ -269,10 +269,10 @@ module.exports = {
       : []),
 
     {
-      name: "language.detection",
+      name: "extract.text.ttp",
       type: "inproc",
       working_dir: "./components/bolts",
-      cmd: "lang_detect_bolt.js",
+      cmd: "text_ttp_bolt.js",
       inputs: [
         {
           source: productionMode
@@ -291,77 +291,6 @@ module.exports = {
             ? "log.material.update.extract.text.raw"
             : "doc-ocr",
           stream_id: "ocr",
-        },
-      ],
-      init: {
-        document_text_path: "material_metadata.raw_text",
-        document_lang_detect_path: "language_detected",
-        lang_detect_service_metadata: config.languageDetection,
-        document_error_path: "message"
-      },
-    },
-
-    // LOGGING STATE OF MATERIAL PROCESS
-    ...(productionMode
-      ? [
-          {
-            name: "log.material.update.language.detection",
-            type: "inproc",
-            working_dir: "./components/bolts",
-            cmd: "pg_logging_bolt.js",
-            inputs: [
-              {
-                source: "language.detection",
-                stream_id: "doc",
-              },
-              {
-                source: "language.detection",
-                stream_id: "pdf",
-              },
-              {
-                source: "language.detection",
-                stream_id: "ocr",
-              },
-            ],
-            init: {
-              pg: config.pg,
-              postgres_table: "material_process_queue",
-              postgres_primary_id: "material_url",
-              message_primary_id: "material_url",
-              postgres_method: "update",
-              postgres_literal_attrs: {
-                status:
-                  "[TEXT][3/5] language detected -> retrieving translations",
-              },
-              document_error_path: "message",
-            },
-          },
-        ]
-      : []),
-
-    {
-      name: "extract.text.ttp",
-      type: "inproc",
-      working_dir: "./components/bolts",
-      cmd: "text_ttp_bolt.js",
-      inputs: [
-        {
-          source: productionMode
-            ? "log.material.update.language.detection"
-            : "language.detection",
-          stream_id: "doc"
-        },
-        {
-          source: productionMode
-            ? "log.material.update.language.detection"
-            : "language.detection",
-          stream_id: "pdf"
-        },
-        {
-          source: productionMode
-            ? "log.material.update.language.detection"
-            : "language.detection",
-          stream_id: "ocr"
         },
       ],
       init: {
@@ -576,18 +505,6 @@ module.exports = {
                 ? [
                     {
                       source: "log.material.update.extract.text.raw",
-                      stream_id: "stream_error",
-                    },
-                  ]
-                : []),
-              {
-                source: "language.detection",
-                stream_id: "stream_error",
-              },
-              ...(productionMode
-                ? [
-                    {
-                      source: "log.material.update.language.detection",
                       stream_id: "stream_error",
                     },
                   ]
