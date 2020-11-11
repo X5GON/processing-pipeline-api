@@ -42,7 +42,7 @@ apps:
 
 
   - script: "pipeline.js"
-    name: "x5update_store_material_complete"
+    name: "x5update_material_store_complete"
     cwd: "./dist/"
     args: "-tn uuid.store-update-complete -tp ../topologies/store-update-complete"
     instances: 1,

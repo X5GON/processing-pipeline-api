@@ -55,9 +55,9 @@ apps:
 
 
   - script: "pipeline.js"
-    name: "x5process_store_material_complete"
+    name: "x5process_material_store_complete"
     cwd: "./dist/"
-    args: "-tn uuid.store-index-complete -tp ../topologies/store-index-complete"
+    args: "-tn uuid.index-material-store-complete -tp ../topologies/index-material-store-complete"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
@@ -69,9 +69,9 @@ apps:
 
 
   - script: "pipeline.js"
-    name: "x5process_store_material_incomplete"
+    name: "x5process_material_store_incomplete"
     cwd: "./dist/"
-    args: "-tn uuid.store-index-incomplete -tp ../topologies/store-index-incomplete"
+    args: "-tn uuid.index-material-store-incomplete -tp ../topologies/index-material-store-incomplete"
     instances: 1,
     exec_mode: "fork"
     autorestart: true

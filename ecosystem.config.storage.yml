@@ -1,6 +1,6 @@
 apps:
   - script: "pipeline.js"
-    name: "x5store_ua_connect"
+    name: "x5store_ua_activity"
     cwd: "./dist/"
     args: "-tn uuid.store-ua-activity -tp ../topologies/store-ua-activity"
     instances: 1,
