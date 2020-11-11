@@ -1,11 +1,20 @@
-# X5GON Preprocessing Pipeline
-![Node.js CI](https://github.com/ErikNovak/X5GON-preprocessing-pipeline/workflows/Node.js%20CI/badge.svg)
+# X5GON Processing Pipelines
+![Node.js CI](https://github.com/X5GON/processing-pipeline-api/workflows/Node.js%20CI/badge.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D%2010.0.0-green.svg)
 ![Platform](https://img.shields.io/badge/platform-linux-green.svg)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-green.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 This project contains the code base for OER material processing pipeline. The
 pipeline is created using qtopology which is a distributed stream processing layer.
+
+For the full documentation check the projects [wiki pages](https://github.com/X5GON/processing-pipeline-api/wiki).
+
+
+![preprocessing pipeline](./readme/kafka-pipeline.png)
+*Figure 1:* The material processing pipeline architecture. It shows how we acquire
+materials via different APIs and send them to the appropriate pipeline based on the
+material's type.
+
 
 ## Prerequisites
 
@@ -17,7 +26,7 @@ container which includes Apache Kafka.
 
 ### Textract
 
-The pipeline uses a nodejs module called [textract](../../../lib/textract) which allows
+The pipeline uses a nodejs module called [textract](./pkgs/textract) which allows
 text extraction of most of text files. For some file types additional libraries need to be installed:
 
 - **PDF** extraction requires `pdftotext` be installed, [link](http://www.xpdfreader.com/download.html).
@@ -26,8 +35,8 @@ text extraction of most of text files. For some file types additional libraries 
 
 #### Installing and Running Docker
 
-It is required to have a running kafka container before running the processing pipeline.
-How to do this is described in the project index [README](../../../README.md).
+It is required to have a running kafka container before running the processing pipeline. For instructions see the [Docker readme](./docker).
+
 
 ## Running Material Processing Pipeline Components
 
@@ -92,8 +101,12 @@ The folder structure is as follows:
 
 | folder name | description |
 | ----------- | ----------- |
-| pipelines   | Contains components and scripts for running a particular processing pipeline |
-| retrievers  | Contains different OER material retrievers as well as the basic retriever used as an example |
+| docker      | Contains the instructions on how to start Apache Kafka Docker image                          |
+| env         | Contains the instructions on how to create the environment variables for the project         |
+| schemas     | Contains the schemas used to validate the material structure                                 |
+| src         | Contains the topology components and configurations                                          |
+| topologies  | Contains the topologies that define how the pipelines are structured together                |
+
 
 ## Processing Pipelines
 
@@ -103,13 +116,6 @@ and process it accordingly. The two types that are currently supported are:
 - text
 - video/audio
 
-Figure 1 shows the material processing pipeline architecture.
-
-![preprocessing pipeline](./readme/kafka-pipeline.png)
-
-*Figure 1:* The material processing pipeline architecture. It shows how we acquire
-materials via different APIs and send them to the appropriate pipeline based on the
-material's type.
 
 ### Pipeline Components
 
@@ -119,17 +125,18 @@ Each pipeline contains the following components:
 - **Content Extraction.** Extracts the content from the material. This is done
     based on the material type:
     - **Text.** We use *textract*, a Nodejs library that is able to extract raw
-        text from the text material.
+        text from the text material. We process *pdf, doc, docx, ppt, pptx*
+        files separately - if we are not able to retrieve the content from the file
+        we assume they are scans and use OCR to retrieve the text. In addition, we
+        translate the text via *Transcription and Translation Platform* ([TTP](https://ttp.mllp.upv.es/index.php?page=faq)).
     - **Video/Audio.** We use the *Transcription and Translation Platform* ([TTP](https://ttp.mllp.upv.es/index.php?page=faq))
         which automatically generates transcriptions (subtitles) and translates
         the video content.
 
 - **Content Enrichment.** Enriches the content by extracting additional features
     from the material.
-    - **Wikification.** We use *wikifier*, an online service for extracting
+    - **Wikification.** We use [wikifier](http://wikifier.org/), an online service for extracting
         wikipedia concepts associated with the provided text.
-    - **DMOZ Classification (TODO).** We still need to develop the DMOZ classification
-        model to acquire the different topics the material is associated with.
 
 - **Validation.** Validates if the material object contains all of the required values.
 
@@ -137,7 +144,7 @@ Each pipeline contains the following components:
     were any errors during thisprocess, we store the error and the material in a
     different table for future exploration.
 
-Components of the pipeline are stored in the [pipelines](pipelines/) folder.
+Components of the pipeline are stored in the [./src/components](./src/components/) folder.
 
 ## Retrievers
 
