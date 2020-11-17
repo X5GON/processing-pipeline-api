@@ -1,7 +1,8 @@
 # X5GON Processing Pipelines
 ![Node.js CI](https://github.com/X5GON/processing-pipeline-api/workflows/Node.js%20CI/badge.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D%2010.0.0-green.svg)
-![Platform](https://img.shields.io/badge/platform-linux-green.svg)
+[![Linux Build](https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=linux)](https://travis-ci.org/X5GON/processing-pipeline-api)
+[![Linux Build](https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=mac)](https://travis-ci.org/X5GON/processing-pipeline-api)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-green.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 This project contains the code base for OER material processing pipeline. The
