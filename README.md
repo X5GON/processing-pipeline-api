@@ -19,11 +19,9 @@ material's type.
 
 ## Prerequisites
 
-### Apache Kafka and Docker
-
-The material processing pipeline is dependent on Apache Kafka. One can install
-an instance of Apache Kafka on their machine - what we prefer is to use a docker
-container which includes Apache Kafka.
+- Node.JS version 10 or greater
+- PostgreSQL version 10 or greater
+- Docker v18 or higher, docker-compose v1.23 or higher
 
 ### Textract
 
@@ -34,67 +32,23 @@ text extraction of most of text files. For some file types additional libraries 
 - **DOC** extraction requires `antiword` be installed, [link](http://www.winfield.demon.nl/), unless on OSX
     in which case textutil (installed by default) is used.
 
-#### Installing and Running Docker
+## Installation
 
-It is required to have a running kafka container before running the processing pipeline. For instructions see the [Docker readme](./docker).
+- Create and configure `.env` file in the [/env](./env) folder (see [instructions](./env/)).
+- Start the docker images (see [instructions](./docker/)).
+- Install the nodejs dependencies: 
 
+    ```bash
+    npm install
+    ```
+    
+- Build the project components: 
 
-## Running Material Processing Pipeline Components
-
-The material processing pipeline is structured of multiple components.
-
-### Material Collector
-
-```bash
-# start the material collector process
-node ./material-collector.js
-```
-
-```bash
-# start the material collector process with node process manager
-pm2 start ecosystem.collecting.config.json
-```
-
-### Material Processing Components
-
-```bash
-cd pipelines
-# start the text material processing pipeline
-TOPOLOGY=processing-material-text node ./pipeline.js
-
-# start the video and audio processing pipeline
-TOPOLOGY=processing-material-video node ./pipeline.js
-```
-```bash
-# start all processing components with node process manager
-pm2 start ecosystem.processing.config.json
-```
-
-### Material and Other Data Storing Components
-
-```bash
-cd pipelines
-# start the complete material storing process
-TOPOLOGY=storing-material-complete ./pipeline.js
-
-# start the partial material storing process
-TOPOLOGY=storing-material-partial ./pipeline.js
-
-# start the user activities storing process
-TOPOLOGY=storing-user-activities ./pipeline.js
-
-# start the recommender system transitions storing process
-TOPOLOGY=storing-recsys-transitions ./pipeline.js
-
-# start the OER provider storing process
-TOPOLOGY=storing-providers ./pipeline.js
-```
-
-```bash
-# start all storing components with node process manager
-pm2 start ecosystem.storing.config.json
-```
-
+  ```bash
+  npm run build
+  ```
+  
+  The built components will be available in the `./dist` folder.
 
 ## Folder Structure
 
@@ -109,7 +63,41 @@ The folder structure is as follows:
 | topologies  | Contains the topologies that define how the pipelines are structured together                |
 
 
-## Processing Pipelines
+## Running the individual pipelines manually
+
+To run an individual pipeline one must run the following command:
+
+```bash
+cd ./dist && node pipeline --tn {user-defined-topology} --tp {relative-path-to-the-topology}
+```
+
+where the `user-defined-topology-name` is the name of the topology (can be anything) and
+the `relative-path-to-the-topology` is the relative path to the topology. If one would like 
+to run a topology in the `./topology` folder, then the relative path would be 
+`../topology/{name-of-the-file}`.
+
+The list of available topologies is found [here](https://github.com/X5GON/processing-pipeline-api/wiki/Component:-Topologies).
+
+
+## Running the pipelines using PM2
+
+While the manual start of the pipeline allows the user to run each pipeline individually,
+one can also run multiple pipelines at the same time using [PM2](https://pm2.keymetrics.io/).
+
+To install PM2 one must run
+
+```bash
+npm install -g pm2
+```
+
+Multiple configuration files `./ecosystem.config.*.yml` were prepared to run the pipelines
+together and can be run with the following command:
+
+```bash
+pm2 start {ecosystem-config-name} [--env production]
+```
+
+## Processing pipelines
 
 The processing pipelines accept Open Educational Materials of a particular *type*
 and process it accordingly. The two types that are currently supported are:
@@ -118,7 +106,7 @@ and process it accordingly. The two types that are currently supported are:
 - video/audio
 
 
-### Pipeline Components
+### Pipeline components
 
 Each pipeline contains the following components:
 
@@ -145,15 +133,18 @@ Each pipeline contains the following components:
     were any errors during thisprocess, we store the error and the material in a
     different table for future exploration.
 
-Components of the pipeline are stored in the [./src/components](./src/components/) folder.
+Components of the pipeline are stored in the [./src/components](./src/components/) folder and
+documented in the [project wiki](https://github.com/X5GON/processing-pipeline-api/wiki/Component:-Bolts).
+
 
 ## Retrievers
 
 The retrievers are responsible for retrieving materials from OER providers that
 are registered in the X5GON Network. For each provider we need to develop its
-own retriever, custom for their API.
+own retriever, custom for their API. 
+
+The retrievers are found in [./src/retrievers](./src/retrievers).
 
 The currenlty available retrievers are for the following OER providers:
 
 - [Videolectures.NET](http://videolectures.net/)
-
