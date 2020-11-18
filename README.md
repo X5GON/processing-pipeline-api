@@ -1,9 +1,9 @@
 # X5GON Processing Pipelines
-![Node.js CI](https://github.com/X5GON/processing-pipeline-api/workflows/Node.js%20CI/badge.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D%2010.0.0-green.svg)
-[![Linux Build](https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=linux)](https://travis-ci.org/X5GON/processing-pipeline-api)
-[![Linux Build](https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=mac)](https://travis-ci.org/X5GON/processing-pipeline-api)
-[![License](https://img.shields.io/badge/License-BSD%202--Clause-green.svg)](https://opensource.org/licenses/BSD-2-Clause)
+![Node][programming-language]
+![Node.js CI][github-action]
+[![Linux Build][linux-build]][linux-build-status]
+[![OSX Build][osx-build]][osx-build-status]
+[![License][license]][license-link]
 
 This project contains the code base for OER material processing pipeline. The
 pipeline is created using qtopology which is a distributed stream processing layer.
@@ -151,3 +151,13 @@ The retrievers are found in [./src/retrievers](./src/retrievers).
 The currenlty available retrievers are for the following OER providers:
 
 - [Videolectures.NET](http://videolectures.net/)
+
+
+[programming-language]: https://img.shields.io/badge/node-%3E%3D%2010.0.0-green.svg
+[github-action]: https://github.com/X5GON/search-api/workflows/Node.js%20CI/badge.svg
+[linux-build]: https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=linux
+[linux-build-status]: https://travis-ci.org/X5GON/processing-pipeline-api
+[osx-build]: https://img.shields.io/travis/X5GON/processing-pipeline-api/master.svg?label=mac
+[osx-build-status]: https://travis-ci.org/X5GON/processing-pipeline-api
+[license]: https://img.shields.io/badge/License-BSD%202--Clause-green.svg
+[license-link]: https://opensource.org/licenses/BSD-2-Clause
