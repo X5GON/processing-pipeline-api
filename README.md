@@ -97,6 +97,9 @@ together and can be run with the following command:
 pm2 start {ecosystem-config-name} [--env production]
 ```
 
+This will also run the pipelines in the background. To control the pm2 services please see
+their [documentation](https://pm2.keymetrics.io/docs/usage/quick-start/).
+
 ## Processing pipelines
 
 The processing pipelines accept Open Educational Materials of a particular *type*
