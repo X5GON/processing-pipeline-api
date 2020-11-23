@@ -44,7 +44,7 @@ apps:
   - script: "pipeline.js"
     name: "x5update_material_store_complete"
     cwd: "./dist/"
-    args: "-tn uuid.store-update-complete -tp ../topologies/store-update-complete"
+    args: "-tn uuid.update-material-store-complete -tp ../topologies/update-material-store-complete"
     instances: 1,
     exec_mode: "fork"
     autorestart: true
