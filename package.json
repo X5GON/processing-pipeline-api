@@ -44,6 +44,7 @@
     "winston-daily-rotate-file": "^4.4.2"
   },
   "devDependencies": {
+    "@types/archiver": "^3.1.1",
     "@types/async": "^3.0.8",
     "@types/bent": "^7.0.2",
     "@types/mime-types": "^2.1.0",

@@ -41,7 +41,7 @@ export default class VideolecturesAPI extends RestBasic {
         // setup the url to get the videolectures metadata
         const response = await got(`${this._domain}/site/api/lectures?apikey=${this._apikey}&slug=${slug}`);
         const lecture: any = response.body;
-        if (!lecture || (!lecture.results && !lecture.results[0])) {
+        if (!lecture || !lecture.results) {
             throw new Error(`[VideolecturesAPI.getMaterial] lecture not found for url=${url}`);
         }
 

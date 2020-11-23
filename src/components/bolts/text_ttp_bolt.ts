@@ -169,7 +169,19 @@ class TextTTPBolt extends BasicBolt {
         }
 
         // //////////////////////////////////////////////////////
-        // 2. Prepare material options and send them to TTP s
+        // 2. Check if the material has text
+        // //////////////////////////////////////////////////////
+
+        const documentText: string = this.get(message, this._documentTextPath);
+        if (typeof documentText !== "string") {
+            // the material language is not supported by TTP
+            const errorMessage = `${this._prefix} Provided 'document_text_path' is not of type 'string'`;
+            this.set(message, this._documentErrorPath, errorMessage);
+            return await this._onEmit(message, "stream_error");
+        }
+
+        // //////////////////////////////////////////////////////
+        // 3. Prepare material options and send them to TTPs
         // //////////////////////////////////////////////////////
 
         // external_id generation - for using in TTP
@@ -200,7 +212,6 @@ class TextTTPBolt extends BasicBolt {
         const formats = Object.keys(this._ttpFormats);
 
         // generate the encription used to submit the document
-        const documentText: string = this.get(message, this._documentTextPath);
         const md5 = crypto.createHash("md5")
             .update(documentText)
             .digest("hex");
@@ -238,7 +249,7 @@ class TextTTPBolt extends BasicBolt {
         // create a zip file containing the material and manifest
         const documentPackagePath = path.join(rootPath, "document-package.zip");
         const documentPackage = fs.createWriteStream(documentPackagePath);
-        const archive = archiver("zip", { zlip: { level: 0 } });
+        const archive = archiver("zip", { zlib: { level: 0 } });
 
         // good practice to catch warnings (ie stat failures and other non-blocking errors)
         archive.on("warning", (error: Error) => {
@@ -284,7 +295,7 @@ class TextTTPBolt extends BasicBolt {
 
         try {
             // //////////////////////////////////////////////////////
-            // 3. Wait for the material to be processed
+            // 4. Wait for the material to be processed
             // //////////////////////////////////////////////////////
 
             const {
@@ -303,7 +314,7 @@ class TextTTPBolt extends BasicBolt {
             }
 
             // //////////////////////////////////////////////////////
-            // 4. Extract all transcriptions and translations
+            // 5. Extract all transcriptions and translations
             // //////////////////////////////////////////////////////
 
             // get processed values - transcriptions and translations
