@@ -198,12 +198,12 @@ module.exports = {
         routes: {
           pdf: {
             "material_metadata.raw_text": {
-              $like: "(?!^$)([^s])",
+              $like: "(?!^$)([^\s])",
             },
           },
           ocr: {
             "material_metadata.raw_text": {
-              $like: "^$|^s*$",
+              $like: "^$|^\s*$",
             },
           },
         },
