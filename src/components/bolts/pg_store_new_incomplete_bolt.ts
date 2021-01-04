@@ -53,11 +53,10 @@ class IPGStoreNewIncompleteBolt extends BasicBolt {
 
         try {
             await this._pg.upsert(oer_materials_partial, { materialurl: null }, "oer_materials_partial");
-            if (this._finalBolt) { return; }
-            return await this._onEmit(message, stream_id);
+            return this._finalBolt ? null : await this._onEmit(message, stream_id);
         } catch (error) {
-            // error handling
-            return;
+            // TODO: handle the error
+            return this._finalBolt ? null : await this._onEmit(message, stream_id);
         }
     }
 }

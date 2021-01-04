@@ -126,11 +126,10 @@ class PGStoreNewCompleteBolt extends BasicBolt {
             // update the message with the material id
             message.oer_materials.material_id = material_id;
 
-            if (this._finalBolt) { return; }
-            return this._onEmit(message, stream_id);
+            return this._finalBolt ? null : this._onEmit(message, stream_id);
         } catch (error) {
-            // error handling
-            return;
+            // TODO: handle the error
+            return this._finalBolt ? null : this._onEmit(message, stream_id);
         }
     }
 }
