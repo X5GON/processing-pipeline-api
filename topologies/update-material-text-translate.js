@@ -198,12 +198,12 @@ module.exports = {
         routes: {
           pdf: {
             "material_metadata.raw_text": {
-              $like: "(?!^$)([^\s])",
+              $like: "(?!^$)([^s])",
             },
           },
           ocr: {
             "material_metadata.raw_text": {
-              $like: "^$|^\s*$",
+              $like: "^$|^s*$",
             },
           },
         },
@@ -305,6 +305,7 @@ module.exports = {
         document_transcriptions_path: "material_metadata.transcriptions",
         document_error_path: "message",
         ttp_id_path: "material_metadata.ttp_id",
+        document_error_path: "message",
       },
     },
 
@@ -319,15 +320,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.ttp",
-                stream_id: "doc"
+                stream_id: "doc",
               },
               {
                 source: "extract.text.ttp",
-                stream_id: "pdf"
+                stream_id: "pdf",
               },
               {
                 source: "extract.text.ttp",
-                stream_id: "ocr"
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -356,19 +357,19 @@ module.exports = {
           source: productionMode
             ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "doc"
+          stream_id: "doc",
         },
         {
           source: productionMode
             ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "pdf"
+          stream_id: "pdf",
         },
         {
           source: productionMode
             ? "log.material.update.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "ocr"
+          stream_id: "ocr",
         },
       ],
       init: {
