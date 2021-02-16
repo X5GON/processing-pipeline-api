@@ -17,9 +17,9 @@ To check if the kafka service has been successfully initialized, run the followi
 ```bash
 sudo docker ps
 # should return something similar to this
-CONTAINER ID  IMAGE                   COMMAND                    CREATED      STATUS      PORTS                                               NAMES
-591cf7e8e0fb  wurstmeister/kafka      "start-kafka.sh"           2 hours ago  Up 2 hours  0.0.0.0:9092->9092/tcp                              docker_kafka_1
-ef8613361a00  wurstmeister/zookeeper  "/bin/sh -c '/usr/sb...'"  2 hours ago  Up 2 hours  22/tcp, 2888/tcp, 3888/tcp, 0.0.0.0:2181->2181/tcp  docker_zookeeper_1
+CONTAINER ID  IMAGE                   COMMAND                    CREATED      STATUS      PORTS                                 NAMES
+591cf7e8e0fb  wurstmeister/kafka      "start-kafka.sh"           2 hours ago  Up 2 hours  0.0.0.0:9092->9092/tcp                x5kafka
+ef8613361a00  wurstmeister/zookeeper  "/bin/sh -c '/usr/sb...'"  2 hours ago  Up 2 hours  22/tcp, 2888/tcp, 3888/tcp, 2181/tcp  x5zookeeper
 ```
 
 To stop KAFKA execute the following command
@@ -50,11 +50,13 @@ version: '3'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: x5zookeeper
     restart: always
-    ports:
-      - "2181:2181"
+    networks:
+      x5gon:
   kafka:
     image: wurstmeister/kafka
+    container_name: x5kafka
     restart: always
     depends_on:
       - zookeeper
@@ -86,4 +88,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${path-to-the-external-kafka-folder-for-persistence}:/kafka
+
+    networks:
+      x5gon:
+
+networks:
+  x5gon:
 ```

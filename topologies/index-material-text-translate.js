@@ -64,54 +64,54 @@ module.exports = {
           },
         ]
       : []),
-      {
-        name: "doc-type",
-        type: "inproc",
-        working_dir: "./components/bolts",
-        cmd: "doc_type_bolt.js",
-        inputs: [
-          {
-            source: productionMode
-              ? "log.material.process.started"
-              : "input.kafka.text",
-          },
-        ],
-        init: {
-          document_location_path: "material_url",
-          document_type_path: "type",
+    {
+      name: "doc-type",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "doc_type_bolt.js",
+      inputs: [
+        {
+          source: productionMode
+            ? "log.material.process.started"
+            : "input.kafka.text",
         },
+      ],
+      init: {
+        document_location_path: "material_url",
+        document_type_path: "type",
       },
-      // LOGGING STATE OF MATERIAL PROCESS
-      ...(productionMode
-        ? [
-            {
-              name: "log.material.process.doc.type",
-              type: "inproc",
-              working_dir: "./components/bolts",
-              cmd: "pg_logging_bolt.js",
-              inputs: [
-                {
-                  source: "doc-type",
-                },
-              ],
-              init: {
-                pg: config.pg,
-                postgres_table: "material_process_queue",
-                postgres_primary_id: "material_url",
-                message_primary_id: "material_url",
-                postgres_method: "update",
-                postgres_time_attrs: {
-                  start_process_time: true,
-                },
-                postgres_literal_attrs: {
-                  status:
-                    "[TEXT][1/7] document type detected -> transforming format",
-                },
-                document_error_path: "message",
+    },
+    // LOGGING STATE OF MATERIAL PROCESS
+    ...(productionMode
+      ? [
+          {
+            name: "log.material.process.doc.type",
+            type: "inproc",
+            working_dir: "./components/bolts",
+            cmd: "pg_logging_bolt.js",
+            inputs: [
+              {
+                source: "doc-type",
               },
+            ],
+            init: {
+              pg: config.pg,
+              postgres_table: "material_process_queue",
+              postgres_primary_id: "material_url",
+              message_primary_id: "material_url",
+              postgres_method: "update",
+              postgres_time_attrs: {
+                start_process_time: true,
+              },
+              postgres_literal_attrs: {
+                status:
+                  "[TEXT][1/7] document type detected -> transforming format",
+              },
+              document_error_path: "message",
             },
-          ]
-        : []),
+          },
+        ]
+      : []),
     {
       name: "transform.material",
       working_dir: ".",
@@ -128,7 +128,7 @@ module.exports = {
           description: "description",
           provider_uri: "provider_uri",
           material_url: "material_url",
-          authors: "author",
+          author: "author",
           language: "language",
           language_detected: "language_detected",
           creation_date: "date_created",
@@ -174,125 +174,125 @@ module.exports = {
         ]
       : []),
 
-      {
-        name: "type-router",
-        type: "sys",
-        working_dir: ".",
-        cmd: "router",
-        inputs: [
-          {
-            source: productionMode
-              ? "log.material.process.formatting"
-              : "transform.material",
+    {
+      name: "type-router",
+      type: "sys",
+      working_dir: ".",
+      cmd: "router",
+      inputs: [
+        {
+          source: productionMode
+            ? "log.material.process.formatting"
+            : "transform.material",
+        },
+      ],
+      init: {
+        routes: {
+          pdf: {
+            type: typeRouterPDF,
           },
-        ],
-        init: {
-          routes: {
-            pdf: {
-              type: typeRouterPDF,
-            },
-            doc: {
-              type: {
-                $like: `^(?!${typeRouterPDF.join("|")}).*$`,
-              },
+          doc: {
+            type: {
+              $like: `^(?!${typeRouterPDF.join("|")}).*$`,
             },
           },
         },
       },
+    },
 
-      {
-        name: "extract.text.raw",
-        type: "inproc",
-        working_dir: "./components/bolts",
-        cmd: "text_bolt.js",
-        inputs: [
-          {
-            source: "type-router",
-            stream_id: "doc",
-          },
-        ],
-        init: {
-          textract_config: {
-            preserve_line_breaks: true,
-            preserve_only_multiple_line_breaks: false,
-            include_alt_text: true,
-          },
-          document_location_path: "material_url",
-          document_location_type: "remote",
-          document_text_path: "material_metadata.raw_text",
-          document_error_path: "message",
+    {
+      name: "extract.text.raw",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "text_bolt.js",
+      inputs: [
+        {
+          source: "type-router",
+          stream_id: "doc",
         },
+      ],
+      init: {
+        textract_config: {
+          preserve_line_breaks: true,
+          preserve_only_multiple_line_breaks: false,
+          include_alt_text: true,
+        },
+        document_location_path: "material_url",
+        document_location_type: "remote",
+        document_text_path: "material_metadata.raw_text",
+        document_error_path: "message",
       },
+    },
 
-      {
-        name: "doc-pdf",
-        type: "inproc",
-        working_dir: "./components/bolts",
-        cmd: "pdf_bolt.js",
-        inputs: [
-          {
-            source: "type-router",
-            stream_id: "pdf",
-          },
-        ],
-        init: {
-          document_location_path: "material_url",
-          document_location_type: "remote",
-          document_pdf_path: "material_metadata",
-          pdf_extract_metadata: [
-            { attribute: "pages", location: "pages" },
-            { attribute: "meta", location: "meta" },
-            { attribute: "text", location: "raw_text" },
-          ],
-          pdf_trim_text: true,
-          convert_to_pdf: true,
+    {
+      name: "doc-pdf",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "pdf_bolt.js",
+      inputs: [
+        {
+          source: "type-router",
+          stream_id: "pdf",
         },
-      },
-      {
-        name: "pdf-router",
-        type: "sys",
-        working_dir: ".",
-        cmd: "router",
-        inputs: [
-          {
-            source: "doc-pdf",
-            stream_id: "pdf",
-          },
+      ],
+      init: {
+        document_location_path: "material_url",
+        document_location_type: "remote",
+        document_pdf_path: "material_metadata",
+        pdf_extract_metadata: [
+          { attribute: "pages", location: "pages" },
+          { attribute: "meta", location: "meta" },
+          { attribute: "text", location: "raw_text" },
         ],
-        init: {
-          routes: {
-            pdf: {
-              "material_metadata.raw_text": {
-                $like: "(?!^$)([^\s])",
-              },
-            },
-            ocr: {
-              "material_metadata.raw_text": {
-                $like: "^$|^\s*$",
-              },
+        pdf_trim_text: true,
+        convert_to_pdf: true,
+      },
+    },
+    {
+      name: "pdf-router",
+      type: "sys",
+      working_dir: ".",
+      cmd: "router",
+      inputs: [
+        {
+          source: "doc-pdf",
+          stream_id: "pdf",
+        },
+      ],
+      init: {
+        routes: {
+          pdf: {
+            "material_metadata.raw_text": {
+              $like: "(?!^$)([^s])",
             },
           },
-        },
-      },
-      {
-        name: "doc-ocr",
-        type: "inproc",
-        working_dir: "./components/bolts",
-        cmd: "ocr_bolt.js",
-        inputs: [
-          {
-            source: "pdf-router",
-            stream_id: "ocr",
+          ocr: {
+            "material_metadata.raw_text": {
+              $like: "^$|^s*$",
+            },
           },
-        ],
-        init: {
-          document_location_path: "material_url",
-          document_location_type: "remote",
-          document_language_path: "language",
-          document_ocr_path: "material_metadata.raw_text",
-          temporary_folder: "../tmp",
         },
       },
+    },
+    {
+      name: "doc-ocr",
+      type: "inproc",
+      working_dir: "./components/bolts",
+      cmd: "ocr_bolt.js",
+      inputs: [
+        {
+          source: "pdf-router",
+          stream_id: "ocr",
+        },
+      ],
+      init: {
+        document_location_path: "material_url",
+        document_location_type: "remote",
+        document_language_path: "language",
+        document_ocr_path: "material_metadata.raw_text",
+        temporary_folder: "../tmp",
+      },
+    },
 
     // LOGGING STATE OF MATERIAL PROCESS
     ...(productionMode
@@ -414,19 +414,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.language.detection"
             : "language.detection",
-          stream_id: "doc"
+          stream_id: "doc",
         },
         {
           source: productionMode
             ? "log.material.process.language.detection"
             : "language.detection",
-          stream_id: "pdf"
+          stream_id: "pdf",
         },
         {
           source: productionMode
             ? "log.material.process.language.detection"
             : "language.detection",
-          stream_id: "ocr"
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -455,15 +455,15 @@ module.exports = {
             inputs: [
               {
                 source: "extract.text.ttp",
-                stream_id: "doc"
+                stream_id: "doc",
               },
               {
                 source: "extract.text.ttp",
-                stream_id: "pdf"
+                stream_id: "pdf",
               },
               {
                 source: "extract.text.ttp",
-                stream_id: "ocr"
+                stream_id: "ocr",
               },
             ],
             init: {
@@ -492,19 +492,19 @@ module.exports = {
           source: productionMode
             ? "log.material.process.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "doc"
+          stream_id: "doc",
         },
         {
           source: productionMode
             ? "log.material.process.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "pdf"
+          stream_id: "pdf",
         },
         {
           source: productionMode
             ? "log.material.process.extract.text.ttp"
             : "extract.text.ttp",
-          stream_id: "ocr"
+          stream_id: "ocr",
         },
       ],
       init: {
@@ -679,10 +679,10 @@ module.exports = {
               },
             ]
           : []),
-          {
-            source: "doc-type",
-            stream_id: "stream_error",
-          },
+        {
+          source: "doc-type",
+          stream_id: "stream_error",
+        },
         ...(productionMode
           ? [
               {

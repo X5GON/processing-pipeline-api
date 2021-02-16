@@ -128,7 +128,7 @@ module.exports = {
           description: "description",
           provider_uri: "provider_uri",
           material_url: "material_url",
-          authors: "author",
+          author: "author",
           language: "language",
           creation_date: "date_created",
           retrieved_date: "retrieved_date",
@@ -262,12 +262,12 @@ module.exports = {
         routes: {
           pdf: {
             "material_metadata.raw_text": {
-              $like: "(?!^$)([^\s])",
+              $like: "(?!^$)([^s])",
             },
           },
           ocr: {
             "material_metadata.raw_text": {
-              $like: "^$|^\s*$",
+              $like: "^$|^s*$",
             },
           },
         },
@@ -393,8 +393,7 @@ module.exports = {
               message_primary_id: "material_url",
               postgres_method: "update",
               postgres_literal_attrs: {
-                status:
-                  "[TEXT][4/6] language detected -> wikifying material",
+                status: "[TEXT][4/6] language detected -> wikifying material",
               },
               document_error_path: "message",
             },

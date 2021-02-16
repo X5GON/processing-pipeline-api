@@ -80,7 +80,7 @@ module.exports = {
           description: "description",
           provider_uri: "provider_uri",
           material_url: "material_url",
-          authors: "author",
+          author: "author",
           language: "language",
           type: "type.ext",
           mimetype: "type.mime",
@@ -145,11 +145,12 @@ module.exports = {
         },
         document_language_path: "language",
         document_location_path: "material_url",
-        document_authors_path: "authors",
+        document_authors_path: "author",
         document_title_path: "title",
         document_text_path: "material_metadata.raw_text",
         document_transcriptions_path: "material_metadata.transcriptions",
         ttp_id_path: "material_metadata.ttp_id",
+        document_error_path: "message",
       },
     },
 
@@ -226,8 +227,7 @@ module.exports = {
               message_primary_id: "material_url",
               postgres_method: "update",
               postgres_literal_attrs: {
-                status:
-                  "[VIDEO][3/4] material wikified -> validating material",
+                status: "[VIDEO][3/4] material wikified -> validating material",
               },
               document_error_path: "message",
             },
