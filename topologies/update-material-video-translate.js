@@ -249,6 +249,7 @@ module.exports = {
               postgres_time_attrs: {
                 end_process_time: true,
               },
+              final_bolt: true,
             },
           },
         ]

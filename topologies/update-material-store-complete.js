@@ -118,7 +118,7 @@ module.exports = {
                             end_process_time: true
                         },
                         postgres_literal_attrs: {
-                            status: "material updated"
+                            status: "[STORE] material updated"
                         },
                         document_error_path: "message",
                         final_bolt: true

@@ -181,6 +181,7 @@ module.exports = {
         ],
         pdf_trim_text: true,
         convert_to_pdf: true,
+        document_error_path: "message",
       },
     },
     {
@@ -227,6 +228,7 @@ module.exports = {
         document_ocr_path: "material_metadata.raw_text",
         ocr_verbose: true,
         temporary_folder: "../tmp",
+        document_error_path: "message",
       },
     },
 
