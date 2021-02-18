@@ -54,8 +54,8 @@ class ValidateBolt extends BasicBolt {
             message: validationMessage
         } = this._validator.validateSchema(message, this._JSONSchema);
         const stream_direction = isValid ? stream_id : "stream_error";
-        // add errors it present
-        if (isValid) {
+        if (!isValid) {
+            // add errors it present
             const errorMessage = `${this._prefix} ${validationMessage}`;
             this.set(message, this._documentErrorPath, errorMessage);
         }

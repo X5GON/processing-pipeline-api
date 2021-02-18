@@ -116,7 +116,6 @@
         "provider_uri",
         "material_url",
         "language",
-        "language_detected",
         "type",
         "mimetype",
         "material_metadata"
